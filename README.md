@@ -2,13 +2,13 @@
 
 A lightweight music player for Android, built with Flutter.
 
-| Site | Excellence | Modesty      |
-| ---- | ---------- | ------------ |
-| Home | Library    | Player Sheet |
+| ![A descriptive alt text](./screenshots/home.jpg) | ![A descriptive alt text](./screenshots/library.jpg) | ![A descriptive alt text](./screenshots/sheet.jpg) |
+| ------------------------------------------------- | ---------------------------------------------------- | -------------------------------------------------- |
+| Home                                              | Library                                              | Player Sheet                                       |
 
-| Site   | Excellence | Modesty     |
-| ------ | ---------- | ----------- |
-| Lyrics | Queue      | Artist Info |
+| ![A descriptive alt text](./screenshots/lyrics.jpg) | ![A descriptive alt text](./screenshots/queue.jpg) | ![A descriptive alt text](./screenshots/artist.jpg) |
+| --------------------------------------------------- | -------------------------------------------------- | --------------------------------------------------- |
+| Lyrics                                              | Queue                                              | Artist Info                                         |
 
 ### Features
 
