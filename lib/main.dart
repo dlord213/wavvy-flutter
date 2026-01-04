@@ -17,8 +17,6 @@ import 'package:wavvy/screens/search/search.controller.dart';
 import 'package:wavvy/screens/search/search.screen.dart';
 import 'package:wavvy/screens/setup/setup.controller.dart';
 
-import 'screens/setup/setup.screen.dart';
-
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 

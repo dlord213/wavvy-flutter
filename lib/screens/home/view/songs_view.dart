@@ -30,7 +30,6 @@ class SongsView extends GetView<HomeController> {
       }
 
       return ListView.builder(
-        padding: const EdgeInsets.only(bottom: 100),
         itemCount: controller.audioController.songs.length,
         itemBuilder: (context, index) {
           final song = controller.audioController.songs[index];
