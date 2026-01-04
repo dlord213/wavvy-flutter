@@ -2,14 +2,6 @@
 
 A lightweight music player for Android, built with Flutter.
 
-| ![A descriptive alt text](./screenshots/home.jpg) | ![A descriptive alt text](./screenshots/library.jpg) | ![A descriptive alt text](./screenshots/sheet.jpg) |
-| ------------------------------------------------- | ---------------------------------------------------- | -------------------------------------------------- |
-| Home                                              | Library                                              | Player Sheet                                       |
-
-| ![A descriptive alt text](./screenshots/lyrics.jpg) | ![A descriptive alt text](./screenshots/queue.jpg) | ![A descriptive alt text](./screenshots/artist.jpg) |
-| --------------------------------------------------- | -------------------------------------------------- | --------------------------------------------------- |
-| Lyrics                                              | Queue                                              | Artist Info                                         |
-
 ### Features
 
 - Gapless Playback: Powered by `just_audio` for high-fidelity, seamless audio.
@@ -36,3 +28,12 @@ Wavvy requires storage access to find your music.
 - Android 12 & below: Requests READ_EXTERNAL_STORAGE.
 
 Note: The app will prompt for permissions on the first launch. If denied, the library will be empty
+
+### Screenshots
+
+| ![A descriptive alt text](./screenshots/home.jpg) | ![A descriptive alt text](./screenshots/library.jpg) | ![A descriptive alt text](./screenshots/sheet.jpg) |
+| ------------------------------------------------- | ---------------------------------------------------- | -------------------------------------------------- |
+| Home                                              | Library                                              | Player Sheet                                       |
+
+| ![A descriptive alt text](./screenshots/lyrics.jpg) | ![A descriptive alt text](./screenshots/queue.jpg) | ![A descriptive alt text](./screenshots/artist.jpg) |
+| --------------------------------------------------- | -------------------------------------------------- | --------------------------------------------------- |
