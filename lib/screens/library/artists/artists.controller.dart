@@ -4,9 +4,11 @@ import 'package:on_audio_query/on_audio_query.dart';
 import 'package:wavvy/screens/audio.controller.dart';
 import 'package:wavvy/screens/library/albums/view/album.screen.dart';
 import 'package:wavvy/screens/library/artists/view/artist.screen.dart';
+import 'package:wavvy/screens/library/playlists/playlists.controller.dart';
 
 class ArtistController extends GetxController {
   final audioController = Get.find<AudioController>();
+  final playlistController = Get.find<PlaylistsController>();
 
   Color getNavbarColor(BuildContext context) {
     return audioController.playerColor.value ??
@@ -88,16 +90,15 @@ class ArtistController extends GetxController {
                   audioController.addToQueue(song);
                 },
               ),
-              // _buildOption(
-              //   icon: Icons.playlist_add,
-              //   label: "Add to Playlist",
-              //   color: textColor,
-              //   onTap: () {
-              //     Navigator.pop(context);
-              //     // TODO: Implement Add to Playlist dialog
-              //     Get.snackbar("Upcoming", "Playlist feature coming soon");
-              //   },
-              // ),
+              _buildOption(
+                icon: Icons.playlist_add,
+                label: "Add to Playlist",
+                color: textColor,
+                onTap: () {
+                  Navigator.pop(context);
+                  playlistController.showAddToPlaylistSheet(context, song);
+                },
+              ),
               _buildOption(
                 icon: Icons.person,
                 label: "Go to Artist",

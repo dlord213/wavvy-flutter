@@ -14,6 +14,7 @@ import 'package:on_audio_query/on_audio_query.dart';
 import 'package:palette_generator/palette_generator.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
+import 'package:wavvy/db/db.dart';
 import 'package:wavvy/instances/audio_handler.instance.dart';
 import 'package:wavvy/models/lyric.dart';
 import 'package:wavvy/utils/player.utils.dart';
@@ -24,8 +25,11 @@ class AudioController extends GetxController {
   // --- Dependencies ---
   final AudioHandler _audioHandler = Get.find<AudioHandler>();
   final OnAudioQuery audioQuery = OnAudioQuery();
+  final DbHelper _dbHelper = DbHelper();
 
   AudioPlayer get audioPlayer => (_audioHandler as WavvyAudioHandler).player;
+  AndroidLoudnessEnhancer get enhancer =>
+      (_audioHandler as WavvyAudioHandler).enhancer;
 
   // --- Workers (For proper disposal) ---
   final List<Worker> _workers = [];
@@ -38,6 +42,9 @@ class AudioController extends GetxController {
   final RxList<AlbumModel> albums = <AlbumModel>[].obs;
   final RxList<ArtistModel> artists = <ArtistModel>[].obs;
   final Rx<SortOption> currentSort = SortOption.titleAZ.obs;
+
+  final RxList<Map<String, dynamic>> localPlaylists =
+      <Map<String, dynamic>>[].obs;
 
   // --- Player State ---
   final Rxn<SongModel> currentSong = Rxn<SongModel>();
@@ -81,6 +88,7 @@ class AudioController extends GetxController {
   void onInit() {
     super.onInit();
     _setupPlayerListeners();
+    refreshLocalPlaylists();
 
     // Filter Songs
     _workers.add(ever(songs, (_) => filteredSongs.assignAll(songs)));
@@ -228,6 +236,16 @@ Size: ${PlayerUtils.formatBytes(song.size, 2)}
 Path: ${song.data}
 Format: ${song.fileExtension}
     """;
+  }
+
+  void toggleVolumeBoost() {
+    if (enhancer.targetGain == 1.0) {
+      enhancer.setTargetGain(12.0);
+    } else {
+      enhancer.setTargetGain(1.0);
+    }
+
+    print("DEBUG: ${enhancer.targetGain}");
   }
 
   // =========================================================
@@ -637,5 +655,89 @@ Format: ${song.fileExtension}
     return androidInfo.version.sdkInt >= 33
         ? (await Permission.audio.request()).isGranted
         : (await Permission.storage.request()).isGranted;
+  }
+
+  // =========================================================
+  // PLAYLISTS
+  // =========================================================
+
+  Future<void> createLocalPlaylist(String name) async {
+    final db = await _dbHelper.db;
+    await db.insert('playlists', {
+      'name': name,
+      'created_at': DateTime.now().toIso8601String(),
+    });
+    refreshLocalPlaylists();
+  }
+
+  Future<void> refreshLocalPlaylists() async {
+    final db = await _dbHelper.db;
+    final List<Map<String, dynamic>> maps = await db.query('playlists');
+    localPlaylists.assignAll(maps);
+  }
+
+  Future<void> addSongToLocalPlaylist(int playlistId, int songId) async {
+    final db = await _dbHelper.db;
+    // Check if song already exists in this playlist to avoid duplicates
+    final existing = await db.query(
+      'playlist_songs',
+      where: 'playlist_id = ? AND song_id = ?',
+      whereArgs: [playlistId, songId],
+    );
+
+    if (existing.isEmpty) {
+      await db.insert('playlist_songs', {
+        'playlist_id': playlistId,
+        'song_id': songId,
+      });
+      Get.snackbar(
+        "Success",
+        "Added to your playlist",
+        snackPosition: SnackPosition.TOP,
+        barBlur: 0,
+        backgroundColor: playerColor.value,
+        colorText: playerTextColor.value,
+        isDismissible: true,
+        dismissDirection: DismissDirection.down,
+        animationDuration: const Duration(milliseconds: 250),
+      );
+    } else {
+      Get.snackbar(
+        "Notice",
+        "Song is already in this playlist",
+        snackPosition: SnackPosition.TOP,
+        barBlur: 0,
+        backgroundColor: playerColor.value,
+        colorText: playerTextColor.value,
+        isDismissible: true,
+        dismissDirection: DismissDirection.down,
+        animationDuration: const Duration(milliseconds: 250),
+      );
+    }
+  }
+
+  // Fetch songs for a specific playlist
+  Future<List<SongModel>> getSongsInPlaylist(int playlistId) async {
+    final db = await _dbHelper.db;
+    final List<Map<String, dynamic>> results = await db.query(
+      'playlist_songs',
+      where: 'playlist_id = ?',
+      whereArgs: [playlistId],
+    );
+
+    List<int> songIds = results.map((e) => e['song_id'] as int).toList();
+    // Match the IDs with your loaded songs list
+    return songs.where((s) => songIds.contains(s.id)).toList();
+  }
+
+  Future<void> removeFromLocalPlaylist(int playlistId, int songId) async {
+    final db = await _dbHelper.db;
+    await db.delete(
+      'playlist_songs',
+      where: 'playlist_id = ? AND song_id = ?',
+      whereArgs: [playlistId, songId],
+    );
+    // Trigger UI refresh if you are observing the list
+    update();
   }
 }

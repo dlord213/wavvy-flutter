@@ -5,9 +5,11 @@ import 'package:on_audio_query/on_audio_query.dart';
 import 'package:wavvy/screens/audio.controller.dart';
 import 'package:wavvy/screens/library/albums/view/album.screen.dart';
 import 'package:wavvy/screens/library/artists/view/artist.screen.dart';
+import 'package:wavvy/screens/library/playlists/playlists.controller.dart';
 
 class FullPlayerSheetController extends GetxController {
   final audioController = Get.find<AudioController>();
+  final playlistController = Get.find<PlaylistsController>();
 
   final PageController pageController = PageController();
   final RxInt sheetPageIndex = 0.obs;
@@ -106,12 +108,46 @@ class FullPlayerSheetController extends GetxController {
               ),
 
               _buildOptionTile(
+                icon: Icons.playlist_add,
+                label: "Add to Playlist",
+                color: textColor,
+                onTap: () {
+                  Navigator.pop(context);
+                  playlistController.showAddToPlaylistSheet(context, song);
+                },
+              ),
+
+              _buildOptionTile(
                 icon: Icons.equalizer_rounded,
                 label: "Equalizer",
                 color: textColor,
                 onTap: () {
                   Navigator.pop(context);
                   audioController.openEqualizer();
+                },
+              ),
+
+              _buildOptionTile(
+                icon: audioController.enhancer.targetGain == 1.0
+                    ? Icons.volume_up_rounded
+                    : Icons.volume_down_rounded,
+                label: audioController.enhancer.targetGain == 1.0
+                    ? "Enable volume boost"
+                    : "Disable volume boost",
+                color: textColor,
+                onTap: () {
+                  audioController.toggleVolumeBoost();
+                  Navigator.pop(context);
+                },
+              ),
+
+              _buildOptionTile(
+                icon: Icons.speed_rounded,
+                label: "Set playback speed",
+                color: textColor,
+                onTap: () {
+                  Navigator.pop(context);
+                  showSpeedDialog();
                 },
               ),
 
@@ -142,6 +178,48 @@ class FullPlayerSheetController extends GetxController {
           ),
         );
       },
+    );
+  }
+
+  void showSpeedDialog() {
+    Get.dialog(
+      AlertDialog(
+        title: const Text("Playback Speed"),
+        content: StreamBuilder<double>(
+          stream: audioController.audioPlayer.speedStream,
+          builder: (context, snapshot) {
+            double currentSpeed = snapshot.data ?? 1.0;
+            return Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  "${currentSpeed.toStringAsFixed(2)}x",
+                  style: const TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                Slider(
+                  value: currentSpeed,
+                  min: 0.5,
+                  max: 2.0,
+                  divisions: 6, // Steps: 0.5, 0.75, 1.0, 1.25, 1.5, 1.75, 2.0
+                  onChanged: (value) {
+                    audioController.audioPlayer.setSpeed(value);
+                  },
+                ),
+              ],
+            );
+          },
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => audioController.audioPlayer.setSpeed(1.0),
+            child: const Text("Reset"),
+          ),
+          TextButton(onPressed: () => Get.back(), child: const Text("Done")),
+        ],
+      ),
     );
   }
 

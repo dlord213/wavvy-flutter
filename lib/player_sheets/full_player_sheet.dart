@@ -41,8 +41,8 @@ class FullPlayerSheet extends GetView<FullPlayerSheetController> {
         child: Container(
           decoration: BoxDecoration(
             borderRadius: BorderRadius.only(
-              topLeft: Radius.circular(16),
-              topRight: Radius.circular(16),
+              topLeft: Radius.circular(12),
+              topRight: Radius.circular(12),
             ),
             gradient: LinearGradient(
               begin: Alignment.topCenter,
@@ -52,7 +52,7 @@ class FullPlayerSheet extends GetView<FullPlayerSheetController> {
             ),
           ),
           child: Padding(
-            padding: EdgeInsets.only(top: context.mediaQueryPadding.top + 36),
+            padding: EdgeInsets.only(top: context.mediaQueryPadding.top + 36, bottom: context.mediaQueryPadding.bottom),
             child: Scaffold(
               backgroundColor: Colors.transparent,
 

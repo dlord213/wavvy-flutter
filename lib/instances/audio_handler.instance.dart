@@ -4,13 +4,23 @@ import 'package:on_audio_query/on_audio_query.dart'; // Needed for SongModel
 
 class WavvyAudioHandler extends BaseAudioHandler
     with QueueHandler, SeekHandler {
-  final AudioPlayer _player = AudioPlayer();
+  final _enhancer = AndroidLoudnessEnhancer();
+  final _equalizer = AndroidEqualizer();
+  late AudioPipeline pipeline = AudioPipeline(
+    androidAudioEffects: [_enhancer, _equalizer],
+  );
+  late final AudioPlayer _player = AudioPlayer(audioPipeline: pipeline);
 
   WavvyAudioHandler() {
     _init();
   }
 
   Future<void> _init() async {
+    _enhancer.setEnabled(true);
+    _enhancer.setTargetGain(1.0);
+
+    _equalizer.setEnabled(true);
+
     _player.playbackEventStream.listen((PlaybackEvent event) {
       final playing = _player.playing;
       playbackState.add(
@@ -69,6 +79,7 @@ class WavvyAudioHandler extends BaseAudioHandler
   }
 
   AudioPlayer get player => _player;
+  AndroidLoudnessEnhancer get enhancer => _enhancer;
 
   @override
   Future<void> play() => _player.play();

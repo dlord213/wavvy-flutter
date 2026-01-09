@@ -191,6 +191,29 @@ class LibraryView extends GetView<HomeController> {
             ),
           ),
 
+          SliverToBoxAdapter(
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(16, 32, 16, 8),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    "Playlists",
+                    style: context.textTheme.titleLarge?.copyWith(
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  TextButton(
+                    onPressed: () {
+                      Get.toNamed("/playlists");
+                    },
+                    child: const Text("See all"),
+                  ),
+                ],
+              ),
+            ),
+          ),
+
           const SliverToBoxAdapter(child: SizedBox(height: 16)),
         ],
       );

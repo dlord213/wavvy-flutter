@@ -52,11 +52,13 @@ class InitialBinding implements Bindings {
     Get.put(ArtistController());
     Get.put(FullPlayerSheetController());
     Get.put(SearchPageController());
+    Get.put(PlaylistsController());
   }
 }
 
 class MyApp extends StatefulWidget {
   MyApp({super.key});
+  const MyApp({super.key});
 
   @override
   State<MyApp> createState() => _MyAppState();
@@ -93,11 +95,13 @@ class _MyAppState extends State<MyApp> {
           ),
           themeMode: ThemeMode.system,
           home: HomeScreen(),
+
           routes: <String, WidgetBuilder>{
             "/home": (context) => HomeScreen(),
             "/search": (context) => SearchScreen(),
             "/albums": (context) => AllAlbumsScreen(),
             "/artists": (context) => AllArtistsScreen(),
+            "/playlists": (context) => AllLocalPlaylistsScreen(),
           },
           initialBinding: InitialBinding(),
         );

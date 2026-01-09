@@ -10,11 +10,12 @@ class BottomMiniPlayer extends GetView<AudioController> {
   final bool showTabView;
 
   BottomMiniPlayer({super.key, this.showTabView = true});
-
   final FullPlayerSheetController sheetController = Get.find();
 
   @override
   Widget build(BuildContext context) {
+    final double bottomPadding = MediaQuery.viewPaddingOf(context).bottom;
+
     return Obx(() {
       final song = controller.currentSong.value;
 
@@ -30,9 +31,9 @@ class BottomMiniPlayer extends GetView<AudioController> {
 
       final double totalHeight;
       if (song != null) {
-        totalHeight = showTabView ? 130 : 80;
+        totalHeight = (showTabView ? 130 : 80) + bottomPadding;
       } else {
-        totalHeight = showTabView ? 50 : 0;
+        totalHeight = (showTabView ? 50 : 0) + bottomPadding;
       }
 
       return GestureDetector(
@@ -49,6 +50,7 @@ class BottomMiniPlayer extends GetView<AudioController> {
           );
         },
         child: AnimatedContainer(
+          padding: EdgeInsets.only(bottom: bottomPadding),
           duration: const Duration(milliseconds: 300),
           height: totalHeight,
           decoration: BoxDecoration(
@@ -72,13 +74,16 @@ class BottomMiniPlayer extends GetView<AudioController> {
                       ? (current / max).clamp(0.0, 1.0)
                       : 0.0;
 
-                  return LinearProgressIndicator(
-                    value: value,
-                    backgroundColor: Colors.transparent,
-                    valueColor: AlwaysStoppedAnimation<Color>(
-                      backgroundColor.lighten(30),
+                  return Container(
+                    margin: EdgeInsets.symmetric(horizontal: 12),
+                    child: LinearProgressIndicator(
+                      value: value,
+                      backgroundColor: Colors.transparent,
+                      valueColor: AlwaysStoppedAnimation<Color>(
+                        backgroundColor.lighten(30),
+                      ),
+                      minHeight: 4,
                     ),
-                    minHeight: 4,
                   );
                 }),
 
