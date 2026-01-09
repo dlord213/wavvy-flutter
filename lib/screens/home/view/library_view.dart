@@ -4,6 +4,7 @@ import 'package:on_audio_query/on_audio_query.dart';
 import 'package:wavvy/screens/home/home.controller.dart';
 import 'package:wavvy/screens/library/albums/view/album.screen.dart';
 import 'package:wavvy/screens/library/artists/view/artist.screen.dart';
+import 'package:wavvy/screens/library/playlists/view/playlist.screen.dart';
 
 class LibraryView extends GetView<HomeController> {
   const LibraryView({super.key});
@@ -210,6 +211,71 @@ class LibraryView extends GetView<HomeController> {
                     child: const Text("See all"),
                   ),
                 ],
+              ),
+            ),
+          ),
+
+          SliverPadding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            sliver: SliverGrid(
+              gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
+                maxCrossAxisExtent: 200,
+                childAspectRatio: 0.8,
+                crossAxisSpacing: 16,
+                mainAxisSpacing: 16,
+              ),
+              delegate: SliverChildBuilderDelegate(
+                (context, index) {
+                  final playlist =
+                      controller.audioController.localPlaylists[index];
+
+                  return GestureDetector(
+                    onTap: () => Get.to(
+                      () => PlaylistDetailScreen(
+                        playlistId: playlist['id'],
+                        playlistName: playlist['name'],
+                      ),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        Expanded(
+                          child: AspectRatio(
+                            aspectRatio: 1,
+                            child: Container(
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                color: context.isDarkMode
+                                    ? Colors.grey[800]
+                                    : Colors.grey[200],
+                              ),
+                              child: Center(
+                                child: Icon(
+                                  Icons.queue_music_rounded,
+                                  size: 40,
+                                  color: context.isDarkMode
+                                      ? Colors.white38
+                                      : Colors.grey,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          playlist['name'],
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          textAlign: TextAlign.center,
+                          style: const TextStyle(fontWeight: FontWeight.w600),
+                        ),
+                      ],
+                    ),
+                  );
+                },
+                childCount: controller.audioController.localPlaylists.length > 4
+                    ? 4
+                    : controller.audioController.localPlaylists.length,
               ),
             ),
           ),

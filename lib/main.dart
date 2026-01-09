@@ -13,6 +13,8 @@ import 'package:wavvy/screens/library/albums/albums.controller.dart';
 import 'package:wavvy/screens/library/albums/albums.screen.dart';
 import 'package:wavvy/screens/library/artists/artists.controller.dart';
 import 'package:wavvy/screens/library/artists/artists.screen.dart';
+import 'package:wavvy/screens/library/playlists/playlists.controller.dart';
+import 'package:wavvy/screens/library/playlists/playlists.screen.dart';
 import 'package:wavvy/screens/search/search.controller.dart';
 import 'package:wavvy/screens/search/search.screen.dart';
 import 'package:wavvy/screens/setup/setup.controller.dart';
@@ -46,19 +48,18 @@ class InitialBinding implements Bindings {
   @override
   void dependencies() {
     Get.put(AudioController());
+    Get.put(PlaylistsController());
     Get.put(SetupController());
     Get.put(HomeController());
     Get.put(AlbumController());
     Get.put(ArtistController());
     Get.put(FullPlayerSheetController());
     Get.put(SearchPageController());
-    Get.put(PlaylistsController());
   }
 }
 
 class MyApp extends StatefulWidget {
   MyApp({super.key});
-  const MyApp({super.key});
 
   @override
   State<MyApp> createState() => _MyAppState();
