@@ -5,6 +5,7 @@ import 'dart:typed_data';
 import 'package:android_intent_plus/android_intent.dart';
 import 'package:android_intent_plus/flag.dart';
 import 'package:audio_service/audio_service.dart';
+import 'package:audiotags/audiotags.dart';
 import 'package:device_info_plus/device_info_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -740,5 +741,172 @@ Format: ${song.fileExtension}
     );
     // Trigger UI refresh if you are observing the list
     update();
+  }
+
+  // =========================================================
+  // METADATA/TAGS
+  // =========================================================
+  Future<void> editSongTags(SongModel song) async {
+    // 1. Setup Controllers with current data
+    final titleCtrl = TextEditingController(text: song.title);
+    final artistCtrl = TextEditingController(text: song.artist ?? "");
+    final albumCtrl = TextEditingController(text: song.album ?? "");
+    final yearCtrl = TextEditingController(
+      text: "",
+    ); // Year isn't always available in SongModel directly
+    final genreCtrl = TextEditingController(text: "");
+
+    // 2. Fetch existing specific tags using AudioTags to get Year/Genre
+    //    (SongModel from on_audio_query is fast but limited in fields)
+    try {
+      final tag = await AudioTags.read(song.data);
+      if (tag != null) {
+        yearCtrl.text = tag.year?.toString() ?? "";
+        genreCtrl.text = tag.genre ?? "";
+      }
+    } catch (e) {
+      print("Error reading specific tags: $e");
+    }
+
+    // 3. Show Dialog
+    await Get.dialog(
+      AlertDialog(
+        backgroundColor: Get.context?.theme.colorScheme.surfaceContainer,
+        title: Text(
+          "Edit Tags",
+          style: TextStyle(color: playerTextColor.value),
+        ),
+        content: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              _buildTagField("Title", titleCtrl),
+              _buildTagField("Artist", artistCtrl),
+              _buildTagField("Album", albumCtrl),
+              _buildTagField("Year", yearCtrl, isNumber: true),
+              _buildTagField("Genre", genreCtrl),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Get.back(),
+            child: Text(
+              "Cancel",
+              style: TextStyle(color: playerTextColor.value),
+            ),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: playerTextColor.value,
+              foregroundColor: playerColor.value,
+            ),
+            onPressed: () async {
+              Get.back(); // Close dialog first
+              await _saveTags(
+                song: song,
+                title: titleCtrl.text,
+                artist: artistCtrl.text,
+                album: albumCtrl.text,
+                year: yearCtrl.text,
+                genre: genreCtrl.text,
+              );
+            },
+            child: const Text("Save"),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTagField(
+    String label,
+    TextEditingController controller, {
+    bool isNumber = false,
+  }) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8.0),
+      child: TextField(
+        controller: controller,
+        keyboardType: isNumber ? TextInputType.number : TextInputType.text,
+        style: TextStyle(color: playerTextColor.value),
+        decoration: InputDecoration(
+          labelText: label,
+          labelStyle: TextStyle(color: playerTextColor.value.withOpacity(0.7)),
+          enabledBorder: UnderlineInputBorder(
+            borderSide: BorderSide(
+              color: playerTextColor.value.withOpacity(0.5),
+            ),
+          ),
+          focusedBorder: UnderlineInputBorder(
+            borderSide: BorderSide(color: playerTextColor.value),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Future<void> _saveTags({
+    required SongModel song,
+    required String title,
+    required String artist,
+    required String album,
+    required String year,
+    required String genre,
+  }) async {
+    try {
+      // Show loading
+      Get.showSnackbar(
+        GetSnackBar(
+          message: "Saving metadata...",
+          duration: const Duration(seconds: 1),
+          backgroundColor: Colors.grey[800]!,
+        ),
+      );
+
+      // 1. Read existing artwork first so we don't lose it
+      List<Picture> existingPictures = [];
+      try {
+        final currentTag = await AudioTags.read(song.data);
+        if (currentTag?.pictures != null) {
+          existingPictures = currentTag!.pictures;
+        }
+      } catch (e) {
+        // If read fails, we default to empty list, meaning artwork might be lost
+        print("Could not read existing artwork: $e");
+      }
+
+      // 2. Create Tag Object with existing pictures
+      final newTag = Tag(
+        title: title,
+        artist: artist,
+        album: album,
+        year: int.tryParse(year),
+        genre: genre,
+        pictures: existingPictures,
+      );
+
+      // 3. Write to file
+      await AudioTags.write(song.data, newTag);
+
+      // 4. Refresh Library
+      await fetchAllSongs();
+
+      Get.snackbar(
+        "Success",
+        "Tags updated successfully",
+        backgroundColor: playerColor.value,
+        colorText: playerTextColor.value,
+      );
+    } catch (e) {
+      print("Tag Edit Error: $e");
+      Get.snackbar(
+        "Error",
+        "Could not write tags. Permission denied or file read-only.",
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.redAccent,
+        colorText: Colors.white,
+      );
+    }
   }
 }

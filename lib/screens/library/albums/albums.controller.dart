@@ -136,6 +136,17 @@ class AlbumController extends GetxController {
                   }
                 },
               ),
+
+              _buildOption(
+                icon: Icons.edit_rounded,
+                label: "Edit song tag/metadata",
+                color: textColor,
+                onTap: () {
+                  Navigator.pop(context);
+                  audioController.editSongTags(song);
+                },
+              ),
+
               // _buildOption(
               //   icon: Icons.delete_outline,
               //   label: "Delete",
