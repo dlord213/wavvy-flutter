@@ -1,3 +1,6 @@
+import 'dart:isolate';
+import 'dart:ui';
+
 import 'package:audio_service/audio_service.dart';
 import 'package:audio_session/audio_session.dart';
 import 'package:flex_color_scheme/flex_color_scheme.dart';
@@ -23,13 +26,26 @@ import 'package:wavvy/screens/search/search.controller.dart';
 import 'package:wavvy/screens/search/search.screen.dart';
 import 'package:wavvy/screens/setup/setup.controller.dart';
 import 'package:wavvy/service/downloader.service.dart';
-import 'package:wavvy/utils/downloader.utils.dart';
+
+@pragma('vm:entry-point')
+void downloadCallback(String id, int status, int progress) {
+  final SendPort? send = IsolateNameServer.lookupPortByName(
+    'downloader_send_port',
+  );
+
+  if (send != null) {
+    send.send([id, status, progress]);
+  } else {
+    print("DownloadCallback: SendPort not found");
+  }
+}
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await FlutterDownloader.initialize(debug: true);
 
+  await FlutterDownloader.initialize(debug: true);
   await FlutterDownloader.registerCallback(downloadCallback);
+
   Get.put(DownloadService());
 
   try {

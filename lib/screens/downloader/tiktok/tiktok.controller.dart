@@ -29,15 +29,21 @@ class TikTokController extends GetxController {
 
     // 1. LISTEN TO SERVICE (Instead of binding own isolate)
     // This triggers whenever ANY download updates in the app
-    ever(_downloadService.currentTaskId, (String taskId) {
-      // Check if the updated task belongs to THIS controller
-      if (taskTitles.containsKey(taskId)) {
-        final status = _downloadService.currentStatus.value;
-        final progress = _downloadService.currentProgress.value;
+    ever(_downloadService.downloadEvent, (List<dynamic>? data) {
+      if (data == null) return;
 
-        progressMap[taskId] = progress;
-        statusMap[taskId] = status;
-        taskTitles.refresh(); // Update UI
+      String id = data[0];
+      DownloadTaskStatus status = DownloadTaskStatus.fromInt(data[1]);
+      int progress = data[2];
+
+      // Only update if this task belongs to us
+      if (taskTitles.containsKey(id)) {
+        progressMap[id] = progress;
+        statusMap[id] = status;
+
+        // Force UI rebuild for specific maps
+        progressMap.refresh();
+        statusMap.refresh();
       }
     });
   }
@@ -117,6 +123,8 @@ class TikTokController extends GetxController {
       fileName: fileName,
       showNotification: true,
       openFileFromNotification: true,
+      saveInPublicStorage: true,
+      allowCellular: true,
     );
 
     if (taskId != null) {

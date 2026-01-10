@@ -33,23 +33,21 @@ class YtdlpController extends GetxController {
     super.onInit();
     loadExistingDownloads();
 
-    ever(_downloadService.currentTaskId, (String taskId) {
-      final status = _downloadService.currentStatus.value;
-      final progress = _downloadService.currentProgress.value;
+    ever(_downloadService.downloadEvent, (List<dynamic>? data) {
+      if (data == null) return;
 
-      // Only update if this task belongs to US (check your tasks map)
-      if (taskTitles.containsKey(taskId)) {
-        progressMap[taskId] = progress;
-        statusMap[taskId] = status;
+      String id = data[0];
+      DownloadTaskStatus status = DownloadTaskStatus.fromInt(data[1]);
+      int progress = data[2];
 
+      // Only update if this task belongs to us
+      if (taskTitles.containsKey(id)) {
+        progressMap[id] = progress;
+        statusMap[id] = status;
+
+        // Force UI rebuild for specific maps
         progressMap.refresh();
-
-        // Trigger MP3 conversion securely
-        if (status == DownloadTaskStatus.complete && progress == 100) {
-          if (!convertedFilePaths.containsKey(taskId)) {
-            _convertToMp3(taskId);
-          }
-        }
+        statusMap.refresh();
       }
     });
   }
@@ -173,6 +171,7 @@ class YtdlpController extends GetxController {
       showNotification: true,
       openFileFromNotification: false, // Set false to handle opening manually
       saveInPublicStorage: true,
+      allowCellular: true,
     );
 
     if (taskId != null) {

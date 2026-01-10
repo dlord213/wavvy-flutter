@@ -5,11 +5,13 @@ import 'package:flutter_downloader/flutter_downloader.dart';
 
 class DownloadService extends GetxService {
   final ReceivePort _port = ReceivePort();
+  final String _portName = 'downloader_send_port';
 
-  // Observables that other controllers can listen to
   var currentTaskId = "".obs;
-  var currentStatus = DownloadTaskStatus.fromInt(0).obs;
+  var currentStatus = DownloadTaskStatus.undefined.obs;
   var currentProgress = 0.obs;
+
+  final downloadEvent = Rxn<List<dynamic>>();
 
   @override
   void onInit() {
@@ -18,32 +20,29 @@ class DownloadService extends GetxService {
   }
 
   void _bindBackgroundIsolate() {
+    IsolateNameServer.removePortNameMapping(_portName);
+
     bool isSuccess = IsolateNameServer.registerPortWithName(
       _port.sendPort,
-      'downloader_send_port',
+      _portName,
     );
 
     if (!isSuccess) {
-      IsolateNameServer.removePortNameMapping('downloader_send_port');
-      _bindBackgroundIsolate();
+      print('Could not register isolate port');
       return;
     }
 
     _port.listen((dynamic data) {
-      String id = data[0];
-      DownloadTaskStatus status = DownloadTaskStatus.fromInt(data[1]);
-      int progress = data[2];
-
-      // Update global state
-      currentTaskId.value = id;
-      currentStatus.value = status;
-      currentProgress.value = progress;
+      // data = [String id, int status, int progress]
+      // We explicitly update the value to trigger 'ever' in the controller
+      downloadEvent.value = data;
     });
   }
 
   @override
   void onClose() {
-    IsolateNameServer.removePortNameMapping('downloader_send_port');
+    IsolateNameServer.removePortNameMapping(_portName);
+    _port.close();
     super.onClose();
   }
 }

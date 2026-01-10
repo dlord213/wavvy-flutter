@@ -39,9 +39,7 @@ class TikTokSearchScreen extends StatelessWidget {
                 controller: ttController.urlController,
                 decoration: InputDecoration(
                   hintText: 'Paste TikTok Link...',
-                  prefixIcon: const Icon(
-                    Icons.tiktok,
-                  ), // Uses Material icon as placeholder
+                  prefixIcon: const Icon(Icons.tiktok),
                   suffixIcon: IconButton(
                     icon: const Icon(Icons.send),
                     onPressed: () => ttController.fetchVideoInfo(
@@ -237,13 +235,6 @@ class TikTokSearchScreen extends StatelessWidget {
                         icon: const Icon(Icons.play_circle_fill),
                         color: Colors.green,
                         onPressed: () => FlutterDownloader.open(taskId: taskId),
-                      ),
-                    if (isRunning)
-                      IconButton(
-                        icon: const Icon(Icons.pause),
-                        color: Colors.orange,
-                        onPressed: () =>
-                            FlutterDownloader.pause(taskId: taskId),
                       ),
                     IconButton(
                       icon: const Icon(
