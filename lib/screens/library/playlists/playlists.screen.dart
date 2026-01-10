@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:wavvy/screens/audio.controller.dart';
 import 'package:wavvy/screens/library/playlists/playlists.controller.dart';
 import 'package:wavvy/screens/library/playlists/view/playlist.screen.dart';
 import 'package:wavvy/widgets/bottom_bar.dart';
@@ -56,8 +55,6 @@ class AllLocalPlaylistsScreen extends GetView<PlaylistsController> {
   ) {
     return GestureDetector(
       onTap: () async {
-        final playlistSongs = await controller.audioController
-            .getSongsInPlaylist(playlist['id']);
         Get.to(
           () => PlaylistDetailScreen(
             playlistId: playlist['id'],

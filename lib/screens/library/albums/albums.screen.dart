@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart' hide AppBar;
 import 'package:flutter/services.dart';
 import 'package:flutter_appbar/flutter_appbar.dart';
-import 'package:flutter_appbar/widgets/appbar_connection.dart';
 import 'package:get/get.dart';
 import 'package:on_audio_query/on_audio_query.dart';
 import 'package:wavvy/widgets/bottom_bar.dart';
@@ -9,12 +8,11 @@ import 'package:wavvy/screens/library/albums/albums.controller.dart';
 import 'package:wavvy/screens/library/albums/view/album.screen.dart';
 
 class AllAlbumsScreen extends GetView<AlbumController> {
-  AllAlbumsScreen({super.key});
+  const AllAlbumsScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
     return Obx(() {
-      final backgroundColor = controller.getBgColor(context);
       final navBarColor = controller.getNavbarColor(context);
 
       final Brightness iconBrightness =

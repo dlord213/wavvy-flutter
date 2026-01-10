@@ -2,15 +2,18 @@ import 'package:flutter/material.dart' hide AppBar;
 import 'package:flutter/services.dart';
 import 'package:flutter_appbar/flutter_appbar.dart';
 import 'package:get/get.dart';
+import 'package:wavvy/screens/downloader/downloader.screen.dart';
 import 'package:wavvy/screens/home/home.controller.dart';
+import 'package:wavvy/screens/home/widgets/downloader_app_bar.dart';
 import 'package:wavvy/screens/home/widgets/library_app_bar.dart';
 import 'package:wavvy/screens/home/view/library_view.dart';
 import 'package:wavvy/screens/home/widgets/songs_app_bar.dart';
+import 'package:wavvy/screens/downloader/youtube/ytdlp.screen.dart';
 import 'package:wavvy/widgets/bottom_bar.dart';
 import 'package:wavvy/screens/home/view/songs_view.dart';
 
 class HomeScreen extends GetView<HomeController> {
-  HomeScreen({super.key});
+  const HomeScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -33,7 +36,7 @@ class HomeScreen extends GetView<HomeController> {
               : Brightness.dark,
         ),
         child: DefaultTabController(
-          length: 2,
+          length: 3,
           child: Scaffold(
             backgroundColor: backgroundColor,
             bottomNavigationBar: BottomMiniPlayer(),
@@ -57,6 +60,15 @@ class HomeScreen extends GetView<HomeController> {
                       ),
                     ],
                     child: LibraryView(),
+                  ),
+                  AppBarConnection(
+                    appBars: [
+                      AppBar(
+                        behavior: const MaterialAppBarBehavior(floating: true),
+                        body: const DownloaderHubAppBar(),
+                      ),
+                    ],
+                    child: DownloaderHubScreen(),
                   ),
                 ],
               ),

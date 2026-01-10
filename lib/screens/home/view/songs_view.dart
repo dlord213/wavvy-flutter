@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:mini_music_visualizer/mini_music_visualizer.dart';
 import 'package:on_audio_query/on_audio_query.dart';
 import 'package:wavvy/screens/home/home.controller.dart';
 
@@ -86,9 +87,26 @@ class SongsView extends GetView<HomeController> {
                 overflow: TextOverflow.ellipsis,
                 style: TextStyle(color: subTextColor),
               ),
-              trailing: IconButton(
-                icon: Icon(Icons.more_vert, size: 20, color: subTextColor),
-                onPressed: () => controller.showSongMenu(context, song),
+              trailing: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  if (isPlaying)
+                    Padding(
+                      padding: EdgeInsets.only(right: 12.0),
+                      child: MiniMusicVisualizer(
+                        color: context.theme.colorScheme.primary,
+                        width: 4,
+                        height: 16,
+                        radius: 4,
+                        animate: true,
+                      ),
+                    ),
+
+                  IconButton(
+                    icon: Icon(Icons.more_vert, size: 20, color: subTextColor),
+                    onPressed: () => controller.showSongMenu(context, song),
+                  ),
+                ],
               ),
               onTap: () => controller.audioController.playSong(
                 song,

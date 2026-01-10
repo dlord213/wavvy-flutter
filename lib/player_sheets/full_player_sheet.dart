@@ -114,10 +114,11 @@ class FullPlayerSheet extends GetView<FullPlayerSheetController> {
                       controller: controller.pageController,
                       onPageChanged: (index) {
                         controller.sheetPageIndex.value = index;
-                        if (index == 2)
+                        if (index == 2) {
                           controller.audioController.fetchArtistInfo(
                             song.artist ?? "",
                           );
+                        }
                       },
                       children: [
                         // Page 0: MAIN PLAYER
@@ -238,7 +239,7 @@ class FullPlayerSheet extends GetView<FullPlayerSheetController> {
         children: [
           const Spacer(flex: 1),
           Center(
-            child: Container(
+            child: SizedBox(
               width: screenWidth - 48,
               height: screenWidth - 48,
               child: QueryArtworkWidget(
@@ -251,18 +252,16 @@ class FullPlayerSheet extends GetView<FullPlayerSheetController> {
                 artworkBorder: BorderRadius.circular(12),
                 artworkWidth: screenWidth - 48,
                 artworkHeight: screenWidth - 48,
-                nullArtworkWidget: Container(
-                  child: Icon(
-                    Icons.music_note_rounded,
-                    size: 80,
-                    color: subTextColor,
-                  ),
+                nullArtworkWidget: Icon(
+                  Icons.music_note_rounded,
+                  size: 80,
+                  color: subTextColor,
                 ),
               ),
             ),
           ),
           const Spacer(flex: 2),
-          Container(
+          SizedBox(
             width: double.infinity,
             child: Column(
               children: [

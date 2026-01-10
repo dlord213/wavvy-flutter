@@ -261,6 +261,7 @@ Format: ${song.fileExtension}
           ignoreCase: true,
           orderType: OrderType.ASC_OR_SMALLER,
           uriType: UriType.EXTERNAL,
+          sortType: SongSortType.TITLE,
         ),
         audioQuery.queryAlbums(),
         audioQuery.queryArtists(),
@@ -594,8 +595,8 @@ Format: ${song.fileExtension}
     );
 
     audioPlayer.sequenceStateStream.listen((state) {
-      if (state?.currentSource != null) {
-        final song = state!.currentSource!.tag as SongModel;
+      if (state.currentSource != null) {
+        final song = state.currentSource!.tag as SongModel;
 
         if (currentSong.value?.id != song.id) {
           currentSong.value = song;

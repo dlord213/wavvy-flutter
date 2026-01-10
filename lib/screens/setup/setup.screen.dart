@@ -3,7 +3,7 @@ import 'package:get/get.dart';
 import 'package:wavvy/screens/setup/setup.controller.dart';
 
 class InitializationScreen extends GetView<SetupController> {
-  InitializationScreen({super.key});
+  const InitializationScreen({super.key});
 
   @override
   Widget build(BuildContext context) {

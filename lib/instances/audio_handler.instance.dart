@@ -20,6 +20,7 @@ class WavvyAudioHandler extends BaseAudioHandler
     _enhancer.setTargetGain(1.0);
 
     _equalizer.setEnabled(true);
+    _player.setSkipSilenceEnabled(true);
 
     _player.playbackEventStream.listen((PlaybackEvent event) {
       final playing = _player.playing;
@@ -55,9 +56,9 @@ class WavvyAudioHandler extends BaseAudioHandler
 
     // Broadcast Current Song Metadata to System Notification
     _player.sequenceStateStream.listen((state) {
-      if (state?.currentSource == null) return;
+      if (state.currentSource == null) return;
 
-      final song = state!.currentSource!.tag as SongModel;
+      final song = state.currentSource!.tag as SongModel;
       Uri? artUri;
       if (song.albumId != null) {
         artUri = Uri.parse(

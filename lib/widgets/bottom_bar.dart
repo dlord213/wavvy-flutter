@@ -193,6 +193,7 @@ class BottomMiniPlayer extends GetView<AudioController> {
                     tabs: const [
                       Tab(icon: Icon(Icons.music_note)),
                       Tab(icon: Icon(Icons.library_books)),
+                      Tab(icon: Icon(Icons.downloading_rounded)),
                     ],
                   ),
                 ),

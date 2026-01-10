@@ -10,7 +10,7 @@ class DbHelper {
     return _db!;
   }
 
-  initDb() async {
+  Future<Database> initDb() async {
     String path = p.join(await getDatabasesPath(), "wavvy_playlists.db");
     return await openDatabase(
       path,

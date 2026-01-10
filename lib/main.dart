@@ -2,10 +2,14 @@ import 'package:audio_service/audio_service.dart';
 import 'package:audio_session/audio_session.dart';
 import 'package:flex_color_scheme/flex_color_scheme.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_downloader/flutter_downloader.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:wavvy/instances/audio_handler.instance.dart';
 import 'package:wavvy/screens/audio.controller.dart';
+import 'package:wavvy/screens/downloader/downloader.screen.dart';
+import 'package:wavvy/screens/downloader/tiktok/tiktok.controller.dart';
+import 'package:wavvy/screens/downloader/youtube/ytdlp.controller.dart';
 import 'package:wavvy/screens/home/home.controller.dart';
 import 'package:wavvy/screens/home/home.screen.dart';
 import 'package:wavvy/player_sheets/full_player_sheet.controller.dart';
@@ -18,9 +22,15 @@ import 'package:wavvy/screens/library/playlists/playlists.screen.dart';
 import 'package:wavvy/screens/search/search.controller.dart';
 import 'package:wavvy/screens/search/search.screen.dart';
 import 'package:wavvy/screens/setup/setup.controller.dart';
+import 'package:wavvy/service/downloader.service.dart';
+import 'package:wavvy/utils/downloader.utils.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await FlutterDownloader.initialize(debug: true);
+
+  await FlutterDownloader.registerCallback(downloadCallback);
+  Get.put(DownloadService());
 
   try {
     final session = await AudioSession.instance;
@@ -49,6 +59,8 @@ class InitialBinding implements Bindings {
   void dependencies() {
     Get.put(AudioController());
     Get.put(PlaylistsController());
+    Get.put(YtdlpController());
+    Get.put(TikTokController());
     Get.put(SetupController());
     Get.put(HomeController());
     Get.put(AlbumController());
@@ -59,7 +71,7 @@ class InitialBinding implements Bindings {
 }
 
 class MyApp extends StatefulWidget {
-  MyApp({super.key});
+  const MyApp({super.key});
 
   @override
   State<MyApp> createState() => _MyAppState();
@@ -103,6 +115,7 @@ class _MyAppState extends State<MyApp> {
             "/albums": (context) => AllAlbumsScreen(),
             "/artists": (context) => AllArtistsScreen(),
             "/playlists": (context) => AllLocalPlaylistsScreen(),
+            "/downloader": (context) => DownloaderHubScreen(),
           },
           initialBinding: InitialBinding(),
         );

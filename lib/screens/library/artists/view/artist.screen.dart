@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
+import 'package:mini_music_visualizer/mini_music_visualizer.dart';
 import 'package:on_audio_query/on_audio_query.dart';
 import 'package:wavvy/screens/library/artists/artists.controller.dart';
 import 'package:wavvy/widgets/bottom_bar.dart';
@@ -199,11 +200,27 @@ class ArtistDetailScreen extends GetView<ArtistController> {
                           color: context.theme.hintColor,
                         ),
                       ),
-                      trailing: IconButton(
-                        icon: const Icon(Icons.more_vert, size: 20),
-                        onPressed: () {
-                          controller.showSongMenu(context, song);
-                        },
+                      trailing: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          if (isPlaying)
+                            Padding(
+                              padding: EdgeInsets.only(right: 12.0),
+                              child: MiniMusicVisualizer(
+                                color: context.theme.colorScheme.primary,
+                                width: 4,
+                                height: 16,
+                                radius: 4,
+                                animate: true,
+                              ),
+                            ),
+
+                          IconButton(
+                            icon: Icon(Icons.more_vert, size: 20),
+                            onPressed: () =>
+                                controller.showSongMenu(context, song),
+                          ),
+                        ],
                       ),
                       onTap: () => controller.audioController.playSong(
                         song,
