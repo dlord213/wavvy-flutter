@@ -1,13 +1,11 @@
 import 'dart:io';
 import 'dart:isolate';
 import 'dart:ui';
-import 'package:ffmpeg_kit_flutter_new_full/ffmpeg_kit.dart';
-import 'package:ffmpeg_kit_flutter_new_full/return_code.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:wavvy/screens/audio.controller.dart';
 import 'package:wavvy/service/downloader.service.dart';
-import 'package:wavvy/utils/downloader.utils.dart';
+import 'package:wavvy/utils/snackbar.utils.dart';
 import 'package:youtube_explode_dart/youtube_explode_dart.dart';
 import 'package:flutter_downloader/flutter_downloader.dart';
 import 'package:path_provider/path_provider.dart';
@@ -65,7 +63,7 @@ class YtdlpController extends GetxController {
       final searchList = await _yt.search.search(query);
       results.value = searchList.toList();
     } catch (e) {
-      Get.snackbar("Error", "Search failed: $e");
+      AppSnackbar.showErrorSnackBar("Error", "Search failed: $e");
     }
   }
 
@@ -84,22 +82,6 @@ class YtdlpController extends GetxController {
 
     // Only convert if it's not already mp3
     if (inputPath == outputPath) return;
-
-    final command =
-        "-i '$inputPath' -vn -ar 44100 -ac 2 -b:a 320k '$outputPath'";
-
-    await FFmpegKit.execute(command).then((session) async {
-      final returnCode = await session.getReturnCode();
-
-      if (ReturnCode.isSuccess(returnCode)) {
-        final originalFile = File(inputPath);
-        if (await originalFile.exists()) await originalFile.delete();
-
-        print("Background Isolate -> CONVERTED");
-        _ac.fetchAllSongs(); // Refresh audio list
-        Get.snackbar("Success", "Converted to MP3: ${taskTitles[taskId]}");
-      }
-    });
   }
 
   void showDownloadDialog(Video video) async {
@@ -148,7 +130,7 @@ class YtdlpController extends GetxController {
       );
     } catch (e) {
       Get.back();
-      Get.snackbar("Error", "Could not fetch streams");
+      AppSnackbar.showErrorSnackBar("Error", "Could not fetch streams");
     }
   }
 

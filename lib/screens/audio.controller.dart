@@ -5,12 +5,13 @@ import 'dart:typed_data';
 import 'package:android_intent_plus/android_intent.dart';
 import 'package:android_intent_plus/flag.dart';
 import 'package:audio_service/audio_service.dart';
-import 'package:audiotags/audiotags.dart';
 import 'package:device_info_plus/device_info_plus.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
 import 'package:just_audio/just_audio.dart';
+import 'package:metadata_god/metadata_god.dart';
 import 'package:on_audio_query/on_audio_query.dart';
 import 'package:palette_generator/palette_generator.dart';
 import 'package:permission_handler/permission_handler.dart';
@@ -19,6 +20,7 @@ import 'package:wavvy/db/db.dart';
 import 'package:wavvy/instances/audio_handler.instance.dart';
 import 'package:wavvy/models/lyric.dart';
 import 'package:wavvy/utils/player.utils.dart';
+import 'package:wavvy/utils/snackbar.utils.dart';
 
 enum SortOption { titleAZ, titleZA, dateNewest, dateOldest, artistAZ }
 
@@ -47,12 +49,21 @@ class AudioController extends GetxController {
   final RxList<Map<String, dynamic>> localPlaylists =
       <Map<String, dynamic>>[].obs;
 
+  // --- Smart Playlists State ---
+  final RxList<SongModel> mostPlayedSongs = <SongModel>[].obs;
+  final RxList<SongModel> recentSongs = <SongModel>[].obs;
+
+  // Internal flag to prevent double counting the same song session
+  int? _lastLoggedSongId;
+
   // --- Player State ---
   final Rxn<SongModel> currentSong = Rxn<SongModel>();
   final RxInt currentIndex = (-1).obs;
   final RxBool isPlaying = false.obs;
   final RxBool isShuffleModeEnabled = false.obs;
   final Rx<LoopMode> loopMode = LoopMode.off.obs;
+  final Rxn<int> sleepTimerMinutes = Rxn<int>();
+  Timer? _sleepTimer;
 
   // OPTIMIZATION: value changes here happen 60fps, ensure listeners are efficient
   final Rx<Duration> currentPosition = Duration.zero.obs;
@@ -68,7 +79,7 @@ class AudioController extends GetxController {
   final RxBool isArtistLoading = false.obs;
 
   final String _geniusAccessToken =
-      '87ZiE-IEgrF1VZWSvD9jdGZfN3YVpUnuPP-T9siitK0jhkrVkIRRxIxubuGI2bkU';
+      dotenv.env['GENIUS_ACCESS_TOKEN'].toString() ?? "";
 
   // --- LYRICS STATE ---
   final RxList<Lyric> lyrics = <Lyric>[].obs;
@@ -88,11 +99,25 @@ class AudioController extends GetxController {
   @override
   void onInit() {
     super.onInit();
+
+    _dbHelper.initStatsTable().then((_) => refreshSmartPlaylists());
+
     _setupPlayerListeners();
     refreshLocalPlaylists();
+    refreshSmartPlaylists();
 
     // Filter Songs
     _workers.add(ever(songs, (_) => filteredSongs.assignAll(songs)));
+
+    _workers.add(
+      interval(currentPosition, (position) {
+        if (currentSong.value != null &&
+            position.inSeconds > 30 &&
+            _lastLoggedSongId != currentSong.value!.id) {
+          _logCurrentSongPlay();
+        }
+      }, time: const Duration(milliseconds: 1000)),
+    );
 
     // Song Change Listener (Debounced)
     // Prevents API spam and heavy palette generation when skipping tracks quickly
@@ -176,16 +201,9 @@ class AudioController extends GetxController {
         );
         await intent.launch();
       } catch (e) {
-        Get.snackbar(
+        AppSnackbar.showErrorSnackBar(
           "Error",
-          "No Equalizer found on this device.",
-          snackPosition: SnackPosition.TOP,
-          barBlur: 0,
-          backgroundColor: playerColor.value,
-          colorText: playerTextColor.value,
-          isDismissible: true,
-          dismissDirection: DismissDirection.down,
-          animationDuration: const Duration(milliseconds: 250),
+          "No equalizer found on this device",
         );
       }
     }
@@ -206,21 +224,14 @@ class AudioController extends GetxController {
         }
 
         Get.back();
-        Get.snackbar(
+        AppSnackbar.showSnackbar(
           "Deleted",
           "${song.title} removed from device.",
-          snackPosition: SnackPosition.TOP,
-          barBlur: 0,
-          backgroundColor: playerColor.value,
-          colorText: playerTextColor.value,
-          isDismissible: true,
-          dismissDirection: DismissDirection.down,
-          animationDuration: const Duration(milliseconds: 250),
         );
       }
     } catch (e) {
       print("Delete error: $e");
-      Get.snackbar(
+      AppSnackbar.showErrorSnackBar(
         "Permission Denied",
         "Cannot delete file on this Android version.",
       );
@@ -513,15 +524,7 @@ Format: ${song.fileExtension}
     queue.add(song);
     await _effectivePlaylist!.add(_createAudioSource(song));
 
-    Get.snackbar(
-      "Added to Queue",
-      song.title,
-      snackPosition: SnackPosition.TOP,
-      barBlur: 0,
-      backgroundColor: playerColor.value ?? Colors.black,
-      colorText: playerTextColor.value,
-      animationDuration: const Duration(milliseconds: 250),
-    );
+    AppSnackbar.showSnackbar("Added to Queue", song.title);
   }
 
   Future<void> playNext(SongModel song) async {
@@ -534,15 +537,7 @@ Format: ${song.fileExtension}
     queue.insert(insertIndex, song);
     await _effectivePlaylist!.insert(insertIndex, _createAudioSource(song));
 
-    Get.snackbar(
-      "Will play next",
-      song.title,
-      snackPosition: SnackPosition.TOP,
-      barBlur: 0,
-      backgroundColor: playerColor.value ?? Colors.black,
-      colorText: playerTextColor.value,
-      animationDuration: const Duration(milliseconds: 250),
-    );
+    AppSnackbar.showSnackbar("Will play next", song.title);
   }
 
   AudioSource _createAudioSource(SongModel song) {
@@ -653,10 +648,37 @@ Format: ${song.fileExtension}
 
   Future<bool> _checkAndRequestPermissions() async {
     if (!Platform.isAndroid) return true;
+
     final androidInfo = await DeviceInfoPlugin().androidInfo;
-    return androidInfo.version.sdkInt >= 33
-        ? (await Permission.audio.request()).isGranted
-        : (await Permission.storage.request()).isGranted;
+
+    // --- 1. Request Notification Permission (Android 13+ / SDK 33+) ---
+    // Essential for media controls in the notification bar
+    if (androidInfo.version.sdkInt >= 33) {
+      if (!(await Permission.notification.isGranted)) {
+        await Permission.notification.request();
+      }
+    }
+
+    // --- 2. Request Storage / Tag Editing Permissions ---
+
+    // Android 11+ (SDK 30+) requires special "All Files Access" to edit tags
+    if (androidInfo.version.sdkInt >= 30) {
+      var status = await Permission.manageExternalStorage.status;
+
+      if (!status.isGranted) {
+        final result = await Permission.manageExternalStorage.request();
+        return result.isGranted;
+      }
+      return true;
+    }
+
+    // Android 10 and below
+    if (androidInfo.version.sdkInt >= 29) {
+      return (await Permission.storage.request()).isGranted;
+    }
+
+    // Older Android
+    return (await Permission.storage.request()).isGranted;
   }
 
   // =========================================================
@@ -692,29 +714,10 @@ Format: ${song.fileExtension}
         'playlist_id': playlistId,
         'song_id': songId,
       });
-      Get.snackbar(
-        "Success",
-        "Added to your playlist",
-        snackPosition: SnackPosition.TOP,
-        barBlur: 0,
-        backgroundColor: playerColor.value,
-        colorText: playerTextColor.value,
-        isDismissible: true,
-        dismissDirection: DismissDirection.down,
-        animationDuration: const Duration(milliseconds: 250),
-      );
+
+      AppSnackbar.showSnackbar("Success", "Added to your playlist");
     } else {
-      Get.snackbar(
-        "Notice",
-        "Song is already in this playlist",
-        snackPosition: SnackPosition.TOP,
-        barBlur: 0,
-        backgroundColor: playerColor.value,
-        colorText: playerTextColor.value,
-        isDismissible: true,
-        dismissDirection: DismissDirection.down,
-        animationDuration: const Duration(milliseconds: 250),
-      );
+      AppSnackbar.showSnackbar("Notice", "Song is already in this playlist");
     }
   }
 
@@ -744,34 +747,42 @@ Format: ${song.fileExtension}
   }
 
   // =========================================================
-  // METADATA/TAGS
+  // METADATA/TAGS (Using metadata_god)
   // =========================================================
   Future<void> editSongTags(SongModel song) async {
-    // 1. Setup Controllers with current data
+    // 1. Setup Controllers with basic data from SongModel first
     final titleCtrl = TextEditingController(text: song.title);
     final artistCtrl = TextEditingController(text: song.artist ?? "");
     final albumCtrl = TextEditingController(text: song.album ?? "");
-    final yearCtrl = TextEditingController(
-      text: "",
-    ); // Year isn't always available in SongModel directly
+    final yearCtrl = TextEditingController(text: "");
     final genreCtrl = TextEditingController(text: "");
 
-    // 2. Fetch existing specific tags using AudioTags to get Year/Genre
-    //    (SongModel from on_audio_query is fast but limited in fields)
+    // 2. Fetch deep metadata using MetadataGod
+    //    (SongModel is fast but limited; MetadataGod reads the file headers)
     try {
-      final tag = await AudioTags.read(song.data);
-      if (tag != null) {
-        yearCtrl.text = tag.year?.toString() ?? "";
-        genreCtrl.text = tag.genre ?? "";
+      final metadata = await MetadataGod.readMetadata(file: song.data);
+      if (metadata != null) {
+        // Create a fallback helper
+        String getVal(String? val, String fallback) =>
+            (val == null || val.isEmpty) ? fallback : val;
+
+        // Update controllers if metadata has more info than MediaStore
+        titleCtrl.text = getVal(metadata.title, titleCtrl.text);
+        artistCtrl.text = getVal(metadata.artist, artistCtrl.text);
+        albumCtrl.text = getVal(metadata.album, albumCtrl.text);
+
+        // Specific fields only available here
+        yearCtrl.text = metadata.year?.toString() ?? "";
+        genreCtrl.text = metadata.genre ?? "";
       }
     } catch (e) {
-      print("Error reading specific tags: $e");
+      print("Error reading tags: $e");
     }
 
     // 3. Show Dialog
     await Get.dialog(
       AlertDialog(
-        backgroundColor: Get.context?.theme.colorScheme.surfaceContainer,
+        backgroundColor: playerColor.value ?? Colors.grey[900],
         title: Text(
           "Edit Tags",
           style: TextStyle(color: playerTextColor.value),
@@ -802,7 +813,7 @@ Format: ${song.fileExtension}
               foregroundColor: playerColor.value,
             ),
             onPressed: () async {
-              Get.back(); // Close dialog first
+              Get.back(); // Close dialog
               await _saveTags(
                 song: song,
                 title: titleCtrl.text,
@@ -855,7 +866,6 @@ Format: ${song.fileExtension}
     required String genre,
   }) async {
     try {
-      // Show loading
       Get.showSnackbar(
         GetSnackBar(
           message: "Saving metadata...",
@@ -864,49 +874,170 @@ Format: ${song.fileExtension}
         ),
       );
 
-      // 1. Read existing artwork first so we don't lose it
-      List<Picture> existingPictures = [];
+      // 1. Read existing metadata to preserve artwork and other fields
+      Metadata? currentMetadata;
       try {
-        final currentTag = await AudioTags.read(song.data);
-        if (currentTag?.pictures != null) {
-          existingPictures = currentTag!.pictures;
-        }
+        currentMetadata = await MetadataGod.readMetadata(file: song.data);
       } catch (e) {
-        // If read fails, we default to empty list, meaning artwork might be lost
-        print("Could not read existing artwork: $e");
+        print("Could not read existing metadata: $e");
       }
 
-      // 2. Create Tag Object with existing pictures
-      final newTag = Tag(
+      // 2. Prepare new Metadata object
+      //    We copy existing picture/track info so they aren't lost
+      final newMetadata = Metadata(
         title: title,
         artist: artist,
         album: album,
         year: int.tryParse(year),
         genre: genre,
-        pictures: existingPictures,
+        // Preserve these fields from the old metadata:
+        picture: currentMetadata?.picture,
+        trackNumber: currentMetadata?.trackNumber,
+        discNumber: currentMetadata?.discNumber,
+        albumArtist: currentMetadata?.albumArtist,
+        durationMs: currentMetadata?.durationMs,
       );
 
       // 3. Write to file
-      await AudioTags.write(song.data, newTag);
+      await MetadataGod.writeMetadata(file: song.data, metadata: newMetadata);
 
       // 4. Refresh Library
       await fetchAllSongs();
 
-      Get.snackbar(
-        "Success",
-        "Tags updated successfully",
-        backgroundColor: playerColor.value,
-        colorText: playerTextColor.value,
-      );
+      if (currentSong.value?.id == song.id) {
+        try {
+          final updatedSong = songs.firstWhere((s) => s.id == song.id);
+          currentSong.value = updatedSong;
+        } catch (e) {}
+      }
+
+      AppSnackbar.showSnackbar("Success", "Tags updated successfully");
     } catch (e) {
       print("Tag Edit Error: $e");
-      Get.snackbar(
+
+      AppSnackbar.showErrorSnackBar(
         "Error",
         "Could not write tags. Permission denied or file read-only.",
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.redAccent,
-        colorText: Colors.white,
       );
     }
+  }
+
+  // =========================================================
+  // EXTRAS
+  // =========================================================
+
+  void setSleepTimer(int? minutes) {
+    _sleepTimer?.cancel();
+
+    if (minutes == null) {
+      sleepTimerMinutes.value = null;
+
+      AppSnackbar.showSnackbar("Sleep Timer", "Timer cancelled");
+      return;
+    }
+
+    sleepTimerMinutes.value = minutes;
+
+    AppSnackbar.showSnackbar(
+      "Sleep Timer",
+      "Music will stop in $minutes minutes",
+    );
+
+    _sleepTimer = Timer(Duration(minutes: minutes), () {
+      audioPlayer.pause();
+      sleepTimerMinutes.value = null;
+    });
+  }
+
+  void openSleepTimerDialog() {
+    Get.dialog(
+      AlertDialog(
+        backgroundColor: playerColor.value ?? Colors.grey[900],
+        title: Text(
+          "Sleep Timer",
+          style: TextStyle(color: playerTextColor.value),
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ...[15, 30, 45, 60, 90].map((minutes) {
+              return ListTile(
+                title: Text(
+                  "$minutes minutes",
+                  style: TextStyle(color: playerTextColor.value),
+                ),
+                trailing: sleepTimerMinutes.value == minutes
+                    ? Icon(Icons.check, color: playerTextColor.value)
+                    : null,
+                onTap: () {
+                  Get.back();
+                  setSleepTimer(minutes);
+                },
+              );
+            }),
+
+            Divider(color: playerTextColor.value.withValues(alpha: 0.3)),
+
+            ListTile(
+              title: Text(
+                "Turn Off Timer",
+                style: TextStyle(
+                  color: playerTextColor.value.withValues(alpha: 0.7),
+                ),
+              ),
+              leading: Icon(
+                Icons.timer_off_outlined,
+                color: playerTextColor.value.withValues(alpha: 0.7),
+              ),
+              onTap: () {
+                Get.back();
+                setSleepTimer(null);
+              },
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Get.back(),
+            child: Text(
+              "Cancel",
+              style: TextStyle(color: playerTextColor.value),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _logCurrentSongPlay() async {
+    if (currentSong.value == null) return;
+
+    final id = currentSong.value!.id;
+    _lastLoggedSongId = id; // Mark as logged for this session
+
+    await _dbHelper.logSongPlay(id);
+    refreshSmartPlaylists(); // Update UI immediately
+  }
+
+  Future<void> refreshSmartPlaylists() async {
+    final mostPlayedMaps = await _dbHelper.getMostPlayed(20);
+    final recentMaps = await _dbHelper.getRecentlyPlayed(20);
+
+    final songMap = {for (var s in songs) s.id: s};
+
+    List<SongModel> tempMostPlayed = [];
+    for (var map in mostPlayedMaps) {
+      final song = songMap[map['song_id']];
+      if (song != null) tempMostPlayed.add(song);
+    }
+
+    List<SongModel> tempRecent = [];
+    for (var map in recentMaps) {
+      final song = songMap[map['song_id']];
+      if (song != null) tempRecent.add(song);
+    }
+
+    mostPlayedSongs.assignAll(tempMostPlayed);
+    recentSongs.assignAll(tempRecent);
   }
 }

@@ -7,7 +7,8 @@ import 'package:tiktok_scraper/tiktok_scraper.dart';
 import 'package:flutter_downloader/flutter_downloader.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
-import 'package:wavvy/service/downloader.service.dart'; // Ensure this path is correct
+import 'package:wavvy/service/downloader.service.dart';
+import 'package:wavvy/utils/snackbar.utils.dart'; // Ensure this path is correct
 
 class TikTokController extends GetxController {
   // Access the Global Service
@@ -58,8 +59,6 @@ class TikTokController extends GetxController {
   Future<void> fetchVideoInfo(String url) async {
     if (url.isEmpty) return;
 
-    final cleanUrl = url.split("?").first;
-
     isLoading.value = true;
     fetchedVideo.value = null;
 
@@ -70,18 +69,16 @@ class TikTokController extends GetxController {
       );
 
       fetchedVideo.value = {
-        'title': video.description ?? "TikTok Video",
-        'author': video.author.name ?? "Unknown",
+        'title': video.description,
+        'author': video.author.name,
         'cover': video.thumbnail,
-        'videoUrl': video.downloadUrls?.first ?? "",
+        'videoUrl': video.downloadUrls.first,
         'id': video.id,
       };
     } catch (e) {
-      Get.snackbar(
+      AppSnackbar.showSnackbar(
         "Error",
         "Could not fetch video. Link might be invalid or private.",
-        backgroundColor: Colors.redAccent,
-        colorText: Colors.white,
       );
       debugPrint("TikTok Error: $e");
     } finally {
@@ -113,7 +110,7 @@ class TikTokController extends GetxController {
         "tiktok_${videoData['id'] ?? DateTime.now().millisecondsSinceEpoch}.mp4";
 
     if (downloadUrl.isEmpty) {
-      Get.snackbar("Error", "No download URL found");
+      AppSnackbar.showSnackbar("Error", "No download URL found");
       return;
     }
 
@@ -134,12 +131,7 @@ class TikTokController extends GetxController {
       progressMap[taskId] = 0;
       statusMap[taskId] = DownloadTaskStatus.enqueued;
 
-      Get.snackbar(
-        "Success",
-        "Download started",
-        backgroundColor: Colors.green,
-        colorText: Colors.white,
-      );
+      AppSnackbar.showSnackbar("Success", "Download started");
 
       // Cleanup UI
       fetchedVideo.value = null;

@@ -6,6 +6,7 @@ import 'package:wavvy/screens/audio.controller.dart';
 import 'package:wavvy/screens/library/albums/view/album.screen.dart';
 import 'package:wavvy/screens/library/artists/view/artist.screen.dart';
 import 'package:wavvy/screens/library/playlists/playlists.controller.dart';
+import 'package:wavvy/utils/snackbar.utils.dart';
 
 class FullPlayerSheetController extends GetxController {
   final audioController = Get.find<AudioController>();
@@ -83,7 +84,10 @@ class FullPlayerSheetController extends GetxController {
                   if (artistModel != null) {
                     Get.to(() => ArtistDetailScreen(artist: artistModel));
                   } else {
-                    Get.snackbar("Error", "Artist info not found");
+                    AppSnackbar.showErrorSnackBar(
+                      "Error",
+                      "Artist info not found",
+                    );
                   }
                 },
               ),
@@ -102,7 +106,10 @@ class FullPlayerSheetController extends GetxController {
                   if (albumModel != null) {
                     Get.to(() => AlbumDetailScreen(album: albumModel));
                   } else {
-                    Get.snackbar("Error", "Album info not found");
+                    AppSnackbar.showErrorSnackBar(
+                      "Error",
+                      "Album info not found",
+                    );
                   }
                 },
               ),

@@ -34,4 +34,56 @@ class DbHelper {
       },
     );
   }
+
+  Future<void> initStatsTable() async {
+    final db = await this.db;
+    await db.execute('''
+      CREATE TABLE IF NOT EXISTS song_stats (
+        song_id INTEGER PRIMARY KEY,
+        play_count INTEGER DEFAULT 0,
+        last_played INTEGER
+      )
+    ''');
+  }
+
+  Future<void> logSongPlay(int songId) async {
+    final db = await this.db;
+    final now = DateTime.now().millisecondsSinceEpoch;
+
+    // Try to update existing row
+    int count = await db.rawUpdate(
+      '''
+      UPDATE song_stats 
+      SET play_count = play_count + 1, last_played = ? 
+      WHERE song_id = ?
+    ''',
+      [now, songId],
+    );
+
+    if (count == 0) {
+      await db.insert('song_stats', {
+        'song_id': songId,
+        'play_count': 1,
+        'last_played': now,
+      });
+    }
+  }
+
+  Future<List<Map<String, dynamic>>> getMostPlayed(int limit) async {
+    final db = await this.db;
+    return await db.query(
+      'song_stats',
+      orderBy: 'play_count DESC',
+      limit: limit,
+    );
+  }
+
+  Future<List<Map<String, dynamic>>> getRecentlyPlayed(int limit) async {
+    final db = await this.db;
+    return await db.query(
+      'song_stats',
+      orderBy: 'last_played DESC',
+      limit: limit,
+    );
+  }
 }

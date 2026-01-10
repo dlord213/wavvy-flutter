@@ -20,7 +20,7 @@ class WavvyAudioHandler extends BaseAudioHandler
     _enhancer.setTargetGain(1.0);
 
     _equalizer.setEnabled(true);
-    _player.setSkipSilenceEnabled(true);
+    _player.setSkipSilenceEnabled(false);
 
     _player.playbackEventStream.listen((PlaybackEvent event) {
       final playing = _player.playing;

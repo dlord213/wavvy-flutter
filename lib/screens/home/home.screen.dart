@@ -9,6 +9,7 @@ import 'package:wavvy/screens/home/widgets/library_app_bar.dart';
 import 'package:wavvy/screens/home/view/library_view.dart';
 import 'package:wavvy/screens/home/widgets/songs_app_bar.dart';
 import 'package:wavvy/screens/downloader/youtube/ytdlp.screen.dart';
+import 'package:wavvy/screens/home/widgets/songs_header_app_bar.dart';
 import 'package:wavvy/widgets/bottom_bar.dart';
 import 'package:wavvy/screens/home/view/songs_view.dart';
 
@@ -45,6 +46,12 @@ class HomeScreen extends GetView<HomeController> {
                 children: [
                   AppBarConnection(
                     appBars: [
+                      AppBar(
+                        behavior: const MaterialAppBarBehavior(
+                          dragOnlyExpanding: true,
+                        ),
+                        body: SongsHeaderAppBar(),
+                      ),
                       AppBar(
                         behavior: const MaterialAppBarBehavior(floating: true),
                         body: const SongsAppBar(),

@@ -5,9 +5,11 @@ import 'package:audio_service/audio_service.dart';
 import 'package:audio_session/audio_session.dart';
 import 'package:flex_color_scheme/flex_color_scheme.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_downloader/flutter_downloader.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:metadata_god/metadata_god.dart';
 import 'package:wavvy/instances/audio_handler.instance.dart';
 import 'package:wavvy/screens/audio.controller.dart';
 import 'package:wavvy/screens/downloader/downloader.screen.dart';
@@ -45,6 +47,9 @@ Future<void> main() async {
 
   await FlutterDownloader.initialize(debug: true);
   await FlutterDownloader.registerCallback(downloadCallback);
+  await MetadataGod.initialize();
+
+  await dotenv.load(fileName: ".env");
 
   Get.put(DownloadService());
 
