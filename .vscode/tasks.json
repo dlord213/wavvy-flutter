@@ -1,0 +1,14 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "wipe_data",
+      "type": "shell",
+      "command": "adb shell pm clear com.mirimomekiku.wavvy",
+      "presentation": {
+        "reveal": "silent",
+        "panel": "shared"
+      }
+    }
+  ]
+}

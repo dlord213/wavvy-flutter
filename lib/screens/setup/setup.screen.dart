@@ -1,48 +1,44 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:wavvy/screens/setup/setup.controller.dart';
+import 'package:wavvy/screens/setup/setup.controller.dart'; // Adjust import path
 
-class InitializationScreen extends GetView<SetupController> {
-  const InitializationScreen({super.key});
+class SetupScreen extends StatelessWidget {
+  const SetupScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
+    Get.put(SetupController());
+
     return Scaffold(
-      body: SafeArea(
-        child: Center(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            mainAxisAlignment: MainAxisAlignment.center,
-            spacing: 12,
-            children: [
-              Icon(Icons.storage_rounded, size: 80),
-              Column(
-                spacing: 4,
-                children: [
-                  Text(
-                    "Grant access to storage",
-                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 24),
-                  ),
-                  Text("This is required to access your media/audio files."),
-                ],
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            // Logo
+            Icon(
+              Icons.music_note,
+              size: 80,
+              color: Theme.of(context).primaryColor,
+            ),
+            const SizedBox(height: 30),
+
+            const SizedBox(
+              width: 30,
+              height: 30,
+              child: CircularProgressIndicator(strokeWidth: 3),
+            ),
+            const SizedBox(height: 20),
+
+            Text(
+              "Loading Library...",
+              style: TextStyle(
+                color: Theme.of(
+                  context,
+                ).colorScheme.onSurface.withValues(alpha: 0.7),
+                fontSize: 16,
               ),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: FilledButton.tonal(
-                        onPressed: () {
-                          controller.requestStoragePermission();
-                        },
-                        child: Text("Grant"),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );

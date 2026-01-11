@@ -4,6 +4,7 @@ import 'dart:ui';
 import 'package:audio_service/audio_service.dart';
 import 'package:audio_session/audio_session.dart';
 import 'package:flex_color_scheme/flex_color_scheme.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_downloader/flutter_downloader.dart';
@@ -44,12 +45,11 @@ void downloadCallback(String id, int status, int progress) {
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await dotenv.load(fileName: ".env");
 
-  await FlutterDownloader.initialize(debug: true);
+  await FlutterDownloader.initialize(debug: kDebugMode);
   await FlutterDownloader.registerCallback(downloadCallback);
   await MetadataGod.initialize();
-
-  await dotenv.load(fileName: ".env");
 
   Get.put(DownloadService());
 
@@ -82,7 +82,6 @@ class InitialBinding implements Bindings {
     Get.put(PlaylistsController());
     Get.put(YtdlpController());
     Get.put(TikTokController());
-    Get.put(SetupController());
     Get.put(HomeController());
     Get.put(AlbumController());
     Get.put(ArtistController());
@@ -129,7 +128,6 @@ class _MyAppState extends State<MyApp> {
           ),
           themeMode: ThemeMode.system,
           home: HomeScreen(),
-
           routes: <String, WidgetBuilder>{
             "/home": (context) => HomeScreen(),
             "/search": (context) => SearchScreen(),

@@ -1,0 +1,12 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Wavvy (Reset Data)",
+      "request": "launch",
+      "type": "dart",
+      "flutterMode": "debug",
+      "preLaunchTask": "wipe_data"
+    }
+  ]
+}

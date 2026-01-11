@@ -26,9 +26,9 @@ enum SortOption { titleAZ, titleZA, dateNewest, dateOldest, artistAZ }
 
 class AudioController extends GetxController {
   // --- Dependencies ---
+  final DbHelper _dbHelper = DbHelper();
   final AudioHandler _audioHandler = Get.find<AudioHandler>();
   final OnAudioQuery audioQuery = OnAudioQuery();
-  final DbHelper _dbHelper = DbHelper();
 
   AudioPlayer get audioPlayer => (_audioHandler as WavvyAudioHandler).player;
   AndroidLoudnessEnhancer get enhancer =>
@@ -78,8 +78,8 @@ class AudioController extends GetxController {
   final RxString artistImageUrl = "".obs;
   final RxBool isArtistLoading = false.obs;
 
-  final String _geniusAccessToken =
-      dotenv.env['GENIUS_ACCESS_TOKEN'].toString() ?? "";
+  final String _geniusAccessToken = dotenv.env['GENIUS_ACCESS_TOKEN']
+      .toString();
 
   // --- LYRICS STATE ---
   final RxList<Lyric> lyrics = <Lyric>[].obs;
@@ -97,22 +97,21 @@ class AudioController extends GetxController {
   ConcatenatingAudioSource? _effectivePlaylist;
 
   @override
-  void onInit() {
+  void onInit() async {
     super.onInit();
+    await _dbHelper.db;
 
-    _dbHelper.initStatsTable().then((_) => refreshSmartPlaylists());
-
-    _setupPlayerListeners();
     refreshLocalPlaylists();
     refreshSmartPlaylists();
 
+    _setupPlayerListeners();
     // Filter Songs
     _workers.add(ever(songs, (_) => filteredSongs.assignAll(songs)));
 
     _workers.add(
       interval(currentPosition, (position) {
         if (currentSong.value != null &&
-            position.inSeconds > 30 &&
+            position.inSeconds > 15 &&
             _lastLoggedSongId != currentSong.value!.id) {
           _logCurrentSongPlay();
         }
@@ -173,7 +172,12 @@ class AudioController extends GetxController {
   @override
   void onReady() {
     super.onReady();
-    WidgetsBinding.instance.addPostFrameCallback((_) => fetchAllSongs());
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      final bool granted = await _checkAndRequestPermissions();
+      if (granted) {
+        await fetchAllSongs();
+      }
+    });
   }
 
   @override
@@ -265,34 +269,36 @@ Format: ${song.fileExtension}
   // =========================================================
 
   Future<void> fetchAllSongs() async {
-    if (!await _checkAndRequestPermissions()) return;
+    final hasPermission = await _checkAndRequestPermissions();
 
-    try {
-      final results = await Future.wait([
-        audioQuery.querySongs(
+    if (hasPermission) {
+      try {
+        final songsList = await audioQuery.querySongs(
           ignoreCase: true,
           orderType: OrderType.ASC_OR_SMALLER,
           uriType: UriType.EXTERNAL,
           sortType: SongSortType.TITLE,
-        ),
-        audioQuery.queryAlbums(),
-        audioQuery.queryArtists(),
-      ]);
+        );
 
-      final songResult = results[0] as List<SongModel>;
-      final albumResult = results[1] as List<AlbumModel>;
-      final artistResult = results[2] as List<ArtistModel>;
+        final albumsList = await audioQuery.queryAlbums();
 
-      // Filter invalid songs
-      final validSongs = songResult.where((s) => s.isMusic == true).toList();
+        final artistsList = await audioQuery.queryArtists();
 
-      songs.assignAll(validSongs);
-      albums.assignAll(albumResult);
-      artists.assignAll(artistResult);
+        final validSongs = songsList.where((s) => s.isMusic == true).toList();
 
-      _applySort();
-    } catch (e) {
-      print("Error fetching library: $e");
+        songs.assignAll(validSongs);
+        albums.assignAll(albumsList);
+        artists.assignAll(artistsList);
+
+        _applySort();
+      } catch (e) {
+        print("Error fetching library: $e");
+      }
+    } else {
+      AppSnackbar.showErrorSnackBar(
+        "Cannot fetch songs",
+        "Permissions not granted.",
+      );
     }
   }
 
@@ -651,34 +657,41 @@ Format: ${song.fileExtension}
 
     final androidInfo = await DeviceInfoPlugin().androidInfo;
 
-    // --- 1. Request Notification Permission (Android 13+ / SDK 33+) ---
-    // Essential for media controls in the notification bar
+    // --- 1. Android 13+ (SDK 33+) ---
     if (androidInfo.version.sdkInt >= 33) {
-      if (!(await Permission.notification.isGranted)) {
+      // Notification is optional for logic, but good for UX
+      if (await Permission.notification.isDenied) {
         await Permission.notification.request();
       }
-    }
 
-    // --- 2. Request Storage / Tag Editing Permissions ---
-
-    // Android 11+ (SDK 30+) requires special "All Files Access" to edit tags
-    if (androidInfo.version.sdkInt >= 30) {
-      var status = await Permission.manageExternalStorage.status;
-
-      if (!status.isGranted) {
-        final result = await Permission.manageExternalStorage.request();
-        return result.isGranted;
+      // CRITICAL: on_audio_query crashes without this on Android 13+
+      if (await Permission.audio.isDenied) {
+        await Permission.audio.request();
       }
-      return true;
+      return await Permission.audio.isGranted;
     }
 
-    // Android 10 and below
-    if (androidInfo.version.sdkInt >= 29) {
-      return (await Permission.storage.request()).isGranted;
+    // --- 2. Android 11 & 12 (SDK 30-32) ---
+    if (androidInfo.version.sdkInt >= 30) {
+      // Need 'Manage External Storage' for writing tags (metadata_god)
+      if (await Permission.manageExternalStorage.isDenied) {
+        await Permission.manageExternalStorage.request();
+      }
+
+      // Often 'Storage' is still needed for reading on some devices
+      if (await Permission.storage.isDenied) {
+        await Permission.storage.request();
+      }
+
+      // Return true if we have Manage External Storage (primary for tag editing)
+      return await Permission.manageExternalStorage.isGranted;
     }
 
-    // Older Android
-    return (await Permission.storage.request()).isGranted;
+    // --- 3. Older Android (SDK < 30) ---
+    if (await Permission.storage.isDenied) {
+      await Permission.storage.request();
+    }
+    return await Permission.storage.isGranted;
   }
 
   // =========================================================
@@ -843,10 +856,12 @@ Format: ${song.fileExtension}
         style: TextStyle(color: playerTextColor.value),
         decoration: InputDecoration(
           labelText: label,
-          labelStyle: TextStyle(color: playerTextColor.value.withOpacity(0.7)),
+          labelStyle: TextStyle(
+            color: playerTextColor.value.withValues(alpha: 0.7),
+          ),
           enabledBorder: UnderlineInputBorder(
             borderSide: BorderSide(
-              color: playerTextColor.value.withOpacity(0.5),
+              color: playerTextColor.value.withValues(alpha: 0.5),
             ),
           ),
           focusedBorder: UnderlineInputBorder(
