@@ -168,6 +168,16 @@ class FullPlayerSheetController extends GetxController {
                 },
               ),
 
+              _buildOptionTile(
+                icon: Icons.edit_rounded,
+                label: "Edit song tag/metadata",
+                color: textColor,
+                onTap: () {
+                  Navigator.pop(context);
+                  audioController.editSongTags(song);
+                },
+              ),
+
               // Divider(color: textColor.withValues(alpha: 0.2)),
 
               // // 5. Delete
