@@ -1,4 +1,11 @@
+import 'dart:io';
+
+import 'package:flutter/material.dart';
+import 'package:just_audio/just_audio.dart';
+import 'package:on_audio_query/on_audio_query.dart';
+import 'package:share_plus/share_plus.dart';
 import 'package:wavvy/models/lyric.dart';
+import 'package:wavvy/utils/snackbar.utils.dart';
 
 class PlayerUtils {
   static String formatDuration(Duration d) {
@@ -26,7 +33,7 @@ class PlayerUtils {
     const suffixes = ["B", "KB", "MB", "GB"];
     var i = (bytes.toString().length - 1) ~/ 3;
     // simple calculation...
-    double size = bytes / (1024 * 1024); 
+    double size = bytes / (1024 * 1024);
     return "${size.toStringAsFixed(2)} MB";
   }
 
@@ -78,5 +85,37 @@ class PlayerUtils {
     }
 
     return '';
+  }
+
+  static Future<void> shareSong(SongModel song) async {
+    final File file = File(song.data);
+
+    if (await file.exists()) {
+      try {
+        // Create an XFile from the path
+        final songFile = XFile(song.data);
+        final params = ShareParams(
+          text: "Share ${song.title} - ${song.artist}",
+          files: [songFile],
+        );
+
+        final result = await SharePlus.instance.share(params);
+      } catch (e) {
+        AppSnackbar.showErrorSnackBar("Error", "Could not share file: $e");
+      }
+    } else {
+      AppSnackbar.showErrorSnackBar("Error", "File not found on device");
+    }
+  }
+
+  static IconData getLoopIcon(LoopMode mode) {
+    switch (mode) {
+      case LoopMode.one:
+        return Icons.repeat_one_rounded;
+      case LoopMode.all:
+        return Icons.repeat_rounded;
+      default:
+        return Icons.repeat_rounded;
+    }
   }
 }

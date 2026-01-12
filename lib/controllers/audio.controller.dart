@@ -19,6 +19,7 @@ import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 import 'package:wavvy/db/db.dart';
 import 'package:wavvy/instances/audio_handler.instance.dart';
 import 'package:wavvy/models/lyric.dart';
+import 'package:wavvy/service/settings.service.dart';
 import 'package:wavvy/utils/player.utils.dart';
 import 'package:wavvy/utils/snackbar.utils.dart';
 
@@ -29,6 +30,7 @@ class AudioController extends GetxController {
   final DbHelper _dbHelper = DbHelper();
   final AudioHandler _audioHandler = Get.find<AudioHandler>();
   final OnAudioQuery audioQuery = OnAudioQuery();
+  final SettingsService _settings = Get.find<SettingsService>();
 
   AudioPlayer get audioPlayer => (_audioHandler as WavvyAudioHandler).player;
   AndroidLoudnessEnhancer get enhancer =>
@@ -108,15 +110,17 @@ class AudioController extends GetxController {
     // Filter Songs
     _workers.add(ever(songs, (_) => filteredSongs.assignAll(songs)));
 
-    _workers.add(
-      interval(currentPosition, (position) {
-        if (currentSong.value != null &&
-            position.inSeconds > 15 &&
-            _lastLoggedSongId != currentSong.value!.id) {
-          _logCurrentSongPlay();
-        }
-      }, time: const Duration(milliseconds: 1000)),
-    );
+    if (!_settings.isIncognitoMode.value) {
+      _workers.add(
+        interval(currentPosition, (position) {
+          if (currentSong.value != null &&
+              position.inSeconds > 15 &&
+              _lastLoggedSongId != currentSong.value!.id) {
+            _logCurrentSongPlay();
+          }
+        }, time: const Duration(milliseconds: 1000)),
+      );
+    }
 
     // Song Change Listener (Debounced)
     // Prevents API spam and heavy palette generation when skipping tracks quickly
@@ -559,7 +563,21 @@ Format: ${song.fileExtension}
   void next() => audioPlayer.hasNext ? audioPlayer.seekToNext() : null;
   void previous() =>
       audioPlayer.hasPrevious ? audioPlayer.seekToPrevious() : null;
-  void seek(Duration pos) => audioPlayer.seek(pos);
+
+  Future<void> seek(Duration position, {bool relative = false}) async {
+    if (relative) {
+      final current = currentPosition.value.inMilliseconds;
+      final delta = position.inMilliseconds;
+      final newPos = current + delta;
+
+      final max = totalDuration.value.inMilliseconds;
+      final clamped = newPos.clamp(0, max);
+
+      await audioPlayer.seek(Duration(milliseconds: clamped));
+    } else {
+      await audioPlayer.seek(position);
+    }
+  }
 
   void toggleShuffle() async {
     final enable = !isShuffleModeEnabled.value;
@@ -615,6 +633,12 @@ Format: ${song.fileExtension}
   }
 
   Future<void> _updatePalette(int songId) async {
+    if (!_settings.enableDynamicColors.value) {
+      playerColor.value = Get.context!.theme.colorScheme.surfaceContainer;
+      playerTextColor.value = Get.context!.theme.colorScheme.onSurface;
+      return;
+    }
+
     try {
       final Uint8List? bytes = await audioQuery.queryArtwork(
         songId,

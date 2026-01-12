@@ -4,6 +4,7 @@ import 'package:get/get.dart';
 import 'package:mini_music_visualizer/mini_music_visualizer.dart';
 import 'package:on_audio_query/on_audio_query.dart';
 import 'package:wavvy/screens/library/artists/artists.controller.dart';
+import 'package:wavvy/widgets/song_menu.dart';
 import 'package:wavvy/widgets/bottom_bar.dart';
 
 class ArtistDetailScreen extends GetView<ArtistController> {
@@ -217,8 +218,13 @@ class ArtistDetailScreen extends GetView<ArtistController> {
 
                           IconButton(
                             icon: Icon(Icons.more_vert, size: 20),
-                            onPressed: () =>
-                                controller.showSongMenu(context, song),
+                            onPressed: () {
+                              SongMenuHelper.show(
+                                context,
+                                song,
+                                options: SongMenuOptions(showGoToArtist: false),
+                              );
+                            },
                           ),
                         ],
                       ),

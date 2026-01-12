@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:on_audio_query/on_audio_query.dart';
-import 'package:wavvy/screens/audio.controller.dart';
+import 'package:wavvy/controllers/audio.controller.dart';
 
 class PlaylistsController extends GetxController {
   final AudioController audioController = Get.find();

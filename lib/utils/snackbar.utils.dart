@@ -27,7 +27,7 @@ class AppSnackbar {
       snackPosition: SnackPosition.TOP,
       barBlur: 0,
       backgroundColor: Get.context?.theme.colorScheme.errorContainer,
-      colorText: Get.context?.theme.colorScheme.onError,
+      colorText: Get.context?.theme.colorScheme.onErrorContainer,
       isDismissible: true,
       dismissDirection: DismissDirection.down,
       animationDuration: const Duration(milliseconds: 250),

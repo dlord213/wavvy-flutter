@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:mini_music_visualizer/mini_music_visualizer.dart';
 import 'package:on_audio_query/on_audio_query.dart';
+import 'package:wavvy/widgets/song_menu.dart';
 import 'package:wavvy/widgets/bottom_bar.dart';
 import 'package:wavvy/screens/library/albums/albums.controller.dart';
 import 'package:wavvy/utils/player.utils.dart';
@@ -20,7 +21,6 @@ class AlbumDetailScreen extends GetView<AlbumController> {
     albumSongs.sort((a, b) => (a.track ?? 0).compareTo(b.track ?? 0));
 
     return Obx(() {
-      final backgroundColor = controller.getBgColor(context);
       final navBarColor = controller.getNavbarColor(context);
 
       final Brightness iconBrightness =
@@ -195,8 +195,13 @@ class AlbumDetailScreen extends GetView<AlbumController> {
 
                           IconButton(
                             icon: Icon(Icons.more_vert, size: 20),
-                            onPressed: () =>
-                                controller.showSongMenu(context, song),
+                            onPressed: () {
+                              SongMenuHelper.show(
+                                context,
+                                song,
+                                options: SongMenuOptions(showGoToAlbum: false),
+                              );
+                            },
                           ),
                         ],
                       ),

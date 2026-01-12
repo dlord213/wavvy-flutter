@@ -25,7 +25,7 @@ class DownloaderHubScreen extends StatelessWidget {
             title: "TikTok Downloader",
             subtitle: "Download without watermark",
             icon: Icons.music_note,
-            color: Colors.black87,
+            color: Colors.red,
             onTap: () => Get.to(() => TikTokSearchScreen()),
           ),
         ],

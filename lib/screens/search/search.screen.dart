@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_appbar/flutter_appbar.dart';
 import 'package:get/get.dart';
 import 'package:on_audio_query/on_audio_query.dart';
+import 'package:wavvy/widgets/song_menu.dart';
 import 'package:wavvy/widgets/bottom_bar.dart';
 import 'package:wavvy/screens/search/search.controller.dart';
 
@@ -155,7 +156,7 @@ class SearchScreen extends GetView<SearchPageController> {
                       trailing: IconButton(
                         icon: const Icon(Icons.more_vert, size: 20),
                         onPressed: () {
-                          controller.showSongMenu(context, song);
+                          SongMenuHelper.show(context, song);
                         },
                       ),
                       subtitle: Text(

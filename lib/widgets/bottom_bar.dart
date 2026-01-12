@@ -2,9 +2,10 @@ import 'package:flex_color_scheme/flex_color_scheme.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:on_audio_query/on_audio_query.dart';
-import 'package:wavvy/screens/audio.controller.dart';
+import 'package:wavvy/controllers/audio.controller.dart';
 import 'package:wavvy/player_sheets/full_player_sheet.controller.dart';
 import 'package:wavvy/player_sheets/full_player_sheet.dart';
+import 'package:wavvy/service/settings.service.dart';
 
 class BottomMiniPlayer extends GetView<AudioController> {
   final bool showTabView;
@@ -15,6 +16,7 @@ class BottomMiniPlayer extends GetView<AudioController> {
   @override
   Widget build(BuildContext context) {
     final double bottomPadding = MediaQuery.viewPaddingOf(context).bottom;
+    final SettingsService _settings = Get.find();
 
     return Obx(() {
       final song = controller.currentSong.value;
@@ -190,10 +192,11 @@ class BottomMiniPlayer extends GetView<AudioController> {
                     unselectedLabelColor: subTextColor.withValues(alpha: 0.5),
                     indicatorColor: backgroundColor.lighten(30),
                     indicatorSize: TabBarIndicatorSize.label,
-                    tabs: const [
+                    tabs: [
                       Tab(icon: Icon(Icons.music_note)),
                       Tab(icon: Icon(Icons.library_books)),
-                      Tab(icon: Icon(Icons.downloading_rounded)),
+                      if (_settings.enableDownloader.value)
+                        Tab(icon: Icon(Icons.downloading_rounded)),
                     ],
                   ),
                 ),

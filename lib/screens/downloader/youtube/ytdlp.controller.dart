@@ -3,7 +3,7 @@ import 'dart:isolate';
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:wavvy/screens/audio.controller.dart';
+import 'package:wavvy/controllers/audio.controller.dart';
 import 'package:wavvy/service/downloader.service.dart';
 import 'package:wavvy/utils/snackbar.utils.dart';
 import 'package:youtube_explode_dart/youtube_explode_dart.dart';

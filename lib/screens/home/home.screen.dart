@@ -4,19 +4,20 @@ import 'package:flutter_appbar/flutter_appbar.dart';
 import 'package:get/get.dart';
 import 'package:wavvy/screens/downloader/downloader.screen.dart';
 import 'package:wavvy/screens/home/home.controller.dart';
-import 'package:wavvy/screens/home/widgets/downloader_app_bar.dart';
-import 'package:wavvy/screens/home/widgets/library_app_bar.dart';
 import 'package:wavvy/screens/home/view/library_view.dart';
-import 'package:wavvy/screens/home/widgets/songs_app_bar.dart';
 import 'package:wavvy/screens/home/widgets/songs_header_app_bar.dart';
+import 'package:wavvy/service/settings.service.dart';
 import 'package:wavvy/widgets/bottom_bar.dart';
 import 'package:wavvy/screens/home/view/songs_view.dart';
+import 'package:wavvy/widgets/floating_app_bar.dart';
 
 class HomeScreen extends GetView<HomeController> {
   const HomeScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final SettingsService _settings = Get.find();
+
     return Obx(() {
       final backgroundColor = controller.getBgColor(context);
       final navBarColor = controller.getNavbarColor(context);
@@ -45,15 +46,25 @@ class HomeScreen extends GetView<HomeController> {
                 children: [
                   AppBarConnection(
                     appBars: [
-                      AppBar(
-                        behavior: const MaterialAppBarBehavior(
-                          dragOnlyExpanding: true,
+                      if (_settings.showStats.value)
+                        AppBar(
+                          behavior: const MaterialAppBarBehavior(
+                            dragOnlyExpanding: true,
+                          ),
+                          body: SongsHeaderAppBar(),
                         ),
-                        body: SongsHeaderAppBar(),
-                      ),
                       AppBar(
                         behavior: const MaterialAppBarBehavior(floating: true),
-                        body: const SongsAppBar(),
+                        body: FloatingAppBar(
+                          showSearch: true,
+                          title: "Wavvy",
+                          actions: [
+                            IconButton(
+                              onPressed: () => Get.toNamed("/settings"),
+                              icon: Icon(Icons.settings_rounded),
+                            ),
+                          ],
+                        ),
                       ),
                     ],
                     child: SongsView(),
@@ -62,7 +73,10 @@ class HomeScreen extends GetView<HomeController> {
                     appBars: [
                       AppBar(
                         behavior: const MaterialAppBarBehavior(floating: true),
-                        body: const LibraryAppBar(),
+                        body: FloatingAppBar(
+                          showSearch: true,
+                          title: "Library",
+                        ),
                       ),
                     ],
                     child: LibraryView(),
@@ -71,7 +85,10 @@ class HomeScreen extends GetView<HomeController> {
                     appBars: [
                       AppBar(
                         behavior: const MaterialAppBarBehavior(floating: true),
-                        body: const DownloaderHubAppBar(),
+                        body: FloatingAppBar(
+                          showSearch: true,
+                          title: "Downloader",
+                        ),
                       ),
                     ],
                     child: DownloaderHubScreen(),

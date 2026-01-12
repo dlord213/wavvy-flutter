@@ -2,7 +2,7 @@ import 'package:flex_color_scheme/flex_color_scheme.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:on_audio_query/on_audio_query.dart';
-import 'package:wavvy/screens/audio.controller.dart';
+import 'package:wavvy/controllers/audio.controller.dart';
 import 'package:wavvy/screens/library/albums/view/album.screen.dart';
 import 'package:wavvy/screens/library/artists/view/artist.screen.dart';
 import 'package:wavvy/screens/library/playlists/playlists.controller.dart';
@@ -19,183 +19,6 @@ class FullPlayerSheetController extends GetxController {
   void onClose() {
     pageController.dispose();
     super.onClose();
-  }
-
-  void showOptionsMenu(BuildContext context, SongModel song) {
-    final textColor = audioController.playerTextColor.value;
-    final sheetColor =
-        audioController.playerColor.value?.darken(40) ?? Colors.grey[900];
-
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: sheetColor,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
-      builder: (context) {
-        return SafeArea(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const SizedBox(height: 8),
-              ListTile(
-                leading: QueryArtworkWidget(
-                  id: song.id,
-                  type: ArtworkType.AUDIO,
-                  artworkBorder: BorderRadius.circular(4),
-                  nullArtworkWidget: Container(
-                    width: 50,
-                    height: 50,
-                    decoration: BoxDecoration(
-                      color: Colors.grey[800],
-                      borderRadius: BorderRadius.circular(4),
-                    ),
-                    child: const Icon(Icons.music_note, color: Colors.white),
-                  ),
-                ),
-                title: Text(
-                  song.title,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
-                    color: textColor,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                subtitle: Text(
-                  song.artist ?? "Unknown",
-                  maxLines: 1,
-                  style: TextStyle(color: textColor.withValues(alpha: 0.7)),
-                ),
-              ),
-              Divider(color: textColor.withValues(alpha: 0.2)),
-
-              _buildOptionTile(
-                icon: Icons.person_rounded,
-                label: "Go to Artist",
-                color: textColor,
-                onTap: () {
-                  Navigator.pop(context);
-
-                  final artistModel = audioController.artists.firstWhereOrNull(
-                    (a) => a.id == song.artistId,
-                  );
-
-                  if (artistModel != null) {
-                    Get.to(() => ArtistDetailScreen(artist: artistModel));
-                  } else {
-                    AppSnackbar.showErrorSnackBar(
-                      "Error",
-                      "Artist info not found",
-                    );
-                  }
-                },
-              ),
-
-              _buildOptionTile(
-                icon: Icons.album,
-                label: "Go to Album",
-                color: textColor,
-                onTap: () {
-                  Navigator.pop(context);
-
-                  final albumModel = audioController.albums.firstWhereOrNull(
-                    (a) => a.id == song.albumId,
-                  );
-
-                  if (albumModel != null) {
-                    Get.to(() => AlbumDetailScreen(album: albumModel));
-                  } else {
-                    AppSnackbar.showErrorSnackBar(
-                      "Error",
-                      "Album info not found",
-                    );
-                  }
-                },
-              ),
-
-              _buildOptionTile(
-                icon: Icons.playlist_add,
-                label: "Add to Playlist",
-                color: textColor,
-                onTap: () {
-                  Navigator.pop(context);
-                  playlistController.showAddToPlaylistSheet(context, song);
-                },
-              ),
-
-              _buildOptionTile(
-                icon: Icons.equalizer_rounded,
-                label: "Equalizer",
-                color: textColor,
-                onTap: () {
-                  Navigator.pop(context);
-                  audioController.openEqualizer();
-                },
-              ),
-
-              _buildOptionTile(
-                icon: audioController.enhancer.targetGain == 1.0
-                    ? Icons.volume_up_rounded
-                    : Icons.volume_down_rounded,
-                label: audioController.enhancer.targetGain == 1.0
-                    ? "Enable volume boost"
-                    : "Disable volume boost",
-                color: textColor,
-                onTap: () {
-                  audioController.toggleVolumeBoost();
-                  Navigator.pop(context);
-                },
-              ),
-
-              _buildOptionTile(
-                icon: Icons.speed_rounded,
-                label: "Set playback speed",
-                color: textColor,
-                onTap: () {
-                  Navigator.pop(context);
-                  showSpeedDialog();
-                },
-              ),
-
-              _buildOptionTile(
-                icon: Icons.info_outline_rounded,
-                label: "Song Info",
-                color: textColor,
-                onTap: () {
-                  Navigator.pop(context);
-                  _showInfoDialog(context, song, sheetColor!, textColor);
-                },
-              ),
-
-              _buildOptionTile(
-                icon: Icons.edit_rounded,
-                label: "Edit song tag/metadata",
-                color: textColor,
-                onTap: () {
-                  Navigator.pop(context);
-                  audioController.editSongTags(song);
-                },
-              ),
-
-              // Divider(color: textColor.withValues(alpha: 0.2)),
-
-              // // 5. Delete
-              // _buildOptionTile(
-              //   icon: Icons.delete_forever,
-              //   label: "Delete from device",
-              //   color: textColor,
-              //   onTap: () {
-              //     Navigator.pop(context);
-              //     _showDeleteDialog(context, song, sheetColor!, textColor);
-              //   },
-              // ),
-              // const SizedBox(height: 16),
-            ],
-          ),
-        );
-      },
-    );
   }
 
   void showSpeedDialog() {
@@ -237,20 +60,6 @@ class FullPlayerSheetController extends GetxController {
           TextButton(onPressed: () => Get.back(), child: const Text("Done")),
         ],
       ),
-    );
-  }
-
-  Widget _buildOptionTile({
-    required IconData icon,
-    required String label,
-    required Color color,
-    required VoidCallback onTap,
-  }) {
-    return ListTile(
-      leading: Icon(icon, color: color),
-      title: Text(label, style: TextStyle(color: color)),
-      onTap: onTap,
-      dense: true,
     );
   }
 

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_downloader/flutter_downloader.dart';
 import 'package:get/get.dart';
-import 'package:wavvy/screens/audio.controller.dart';
+import 'package:wavvy/controllers/audio.controller.dart';
 import 'package:wavvy/screens/downloader/youtube/ytdlp.controller.dart';
 import 'package:youtube_explode_dart/youtube_explode_dart.dart';
 
