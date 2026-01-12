@@ -6,9 +6,7 @@ Wavvy combines a beautiful, adaptive UI with powerful playback features, automat
 ### Screenshots
 | ![A descriptive alt text](./screenshots/home.jpg) | ![A descriptive alt text](./screenshots/library.jpg) | ![A descriptive alt text](./screenshots/sheet.jpg) |
 | ------------------------------------------------- | ---------------------------------------------------- | -------------------------------------------------- |
-| Home                                              | Library                                              | Player Sheet                                       |
 | ![A descriptive alt text](./screenshots/lyrics.jpg) | ![A descriptive alt text](./screenshots/queue.jpg) | ![A descriptive alt text](./screenshots/artist.jpg) |
-| --------------------------------------------------- | -------------------------------------------------- | --------------------------------------------------- |
 
 ## ✨ Features
   🎧 Playback & Audio
