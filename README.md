@@ -3,7 +3,14 @@
 
 Wavvy combines a beautiful, adaptive UI with powerful playback features, automatic metadata fetching, and an integrated downloader for YouTube and TikTok.
 
-### ✨ Features
+### Screenshots
+| ![A descriptive alt text](./screenshots/home.jpg) | ![A descriptive alt text](./screenshots/library.jpg) | ![A descriptive alt text](./screenshots/sheet.jpg) |
+| ------------------------------------------------- | ---------------------------------------------------- | -------------------------------------------------- |
+| Home                                              | Library                                              | Player Sheet                                       |
+| ![A descriptive alt text](./screenshots/lyrics.jpg) | ![A descriptive alt text](./screenshots/queue.jpg) | ![A descriptive alt text](./screenshots/artist.jpg) |
+| --------------------------------------------------- | -------------------------------------------------- | --------------------------------------------------- |
+
+## ✨ Features
   🎧 Playback & Audio
   - Gapless Playback: Powered by just_audio for seamless transitions.
   - Audio Effects: Includes Fade In/Out, Skip Silence, and Speed/Pitch control.
