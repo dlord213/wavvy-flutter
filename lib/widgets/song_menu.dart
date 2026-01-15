@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:on_audio_query/on_audio_query.dart';
 import 'package:wavvy/controllers/audio.controller.dart';
+import 'package:wavvy/screens/custom_equalizer/equalizer.screen.dart';
 import 'package:wavvy/screens/library/albums/view/album.screen.dart';
 import 'package:wavvy/screens/library/artists/view/artist.screen.dart';
 import 'package:wavvy/screens/library/playlists/playlists.controller.dart';
@@ -18,6 +19,7 @@ class SongMenuOptions {
   final bool showEditTags;
   final bool showDelete;
   final bool showShare;
+  final bool showCustomEqualizer;
 
   const SongMenuOptions({
     this.showPlayNext = true,
@@ -29,6 +31,7 @@ class SongMenuOptions {
     this.showEditTags = true,
     this.showDelete = false,
     this.showShare = true,
+    this.showCustomEqualizer = false,
   });
 }
 
@@ -156,6 +159,17 @@ class SongMenuHelper {
                           onTap: () {
                             Navigator.pop(context);
                             _audioController.editSongTags(song);
+                          },
+                        ),
+
+                      if (options.showCustomEqualizer)
+                        _buildOption(
+                          icon: Icons.equalizer_rounded,
+                          label: "Custom equalizer",
+                          color: textColor,
+                          onTap: () {
+                            Navigator.pop(context);
+                            Get.to(() => const EqualizerScreen());
                           },
                         ),
 

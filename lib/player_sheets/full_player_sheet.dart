@@ -109,7 +109,11 @@ class FullPlayerSheet extends GetView<FullPlayerSheetController> {
                       ),
                     ),
                     onPressed: () {
-                      SongMenuHelper.show(context, song);
+                      SongMenuHelper.show(
+                        context,
+                        song,
+                        options: SongMenuOptions(showCustomEqualizer: true),
+                      );
                     },
                   ),
                 ],
@@ -121,6 +125,8 @@ class FullPlayerSheet extends GetView<FullPlayerSheetController> {
                   Expanded(
                     child: PageView(
                       controller: controller.pageController,
+                      scrollBehavior: MaterialScrollBehavior(),
+                      physics: NeverScrollableScrollPhysics(),
                       onPageChanged: (index) {
                         controller.sheetPageIndex.value = index;
                         if (index == 2) {
