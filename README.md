@@ -10,14 +10,14 @@ Wavvy combines a beautiful, adaptive UI with powerful playback features, automat
 
 ## ✨ Features
   🎧 Playback & Audio
-  - Gapless Playback: Powered by just_audio for seamless transitions.
+  - Gapless Playback
   - Audio Effects: Includes Fade In/Out, Skip Silence, and Speed/Pitch control.
   - Format Support: Plays MP3, FLAC, M4A, WAV, and more.
-  - System Integration: Full background playback, notification controls, and lock screen media support.
+  - System Integration: Full background playback, notification controls.
 
 ### 🎨 UI & Customization
   - Adaptive Themes: The player UI automatically extracts colors from the current album art.
-  - Dynamic Theming: Choose from 50+ color schemes (powered by flex_color_scheme) with automatic Dark/Light mode switching.
+  - Dynamic Theming: Choose from 50+ color schemes with automatic Dark/Light mode switching.
   - Immersive Player: A beautiful, gesture-driven player sheet with animated artwork and lyrics.
 
 ### 📝 Lyrics & Metadata
