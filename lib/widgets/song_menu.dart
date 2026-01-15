@@ -20,6 +20,7 @@ class SongMenuOptions {
   final bool showDelete;
   final bool showShare;
   final bool showCustomEqualizer;
+  final bool showSystemEqualizer;
 
   const SongMenuOptions({
     this.showPlayNext = true,
@@ -32,6 +33,7 @@ class SongMenuOptions {
     this.showDelete = false,
     this.showShare = true,
     this.showCustomEqualizer = false,
+    this.showSystemEqualizer = false,
   });
 }
 
@@ -113,6 +115,31 @@ class SongMenuHelper {
                           },
                         ),
 
+                      if (options.showCustomEqualizer)
+                        _buildOption(
+                          icon: Icons.equalizer_rounded,
+                          label: "Custom equalizer",
+                          color: textColor,
+                          onTap: () {
+                            Navigator.pop(context);
+                            Get.to(() => const EqualizerScreen());
+                          },
+                        ),
+
+                      if (options.showSystemEqualizer)
+                        _buildOption(
+                          icon: Icons.surround_sound_rounded,
+                          label: "System equalizer",
+                          color: textColor,
+                          onTap: () {
+                            PlayerUtils.openEqualizer(
+                              _audioController
+                                  .audioPlayer
+                                  .androidAudioSessionId,
+                            );
+                          },
+                        ),
+
                       if (options.showGoToArtist)
                         _buildOption(
                           icon: Icons.person,
@@ -159,17 +186,6 @@ class SongMenuHelper {
                           onTap: () {
                             Navigator.pop(context);
                             _audioController.editSongTags(song);
-                          },
-                        ),
-
-                      if (options.showCustomEqualizer)
-                        _buildOption(
-                          icon: Icons.equalizer_rounded,
-                          label: "Custom equalizer",
-                          color: textColor,
-                          onTap: () {
-                            Navigator.pop(context);
-                            Get.to(() => const EqualizerScreen());
                           },
                         ),
 

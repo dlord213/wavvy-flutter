@@ -196,27 +196,6 @@ class AudioController extends GetxController {
   // ACTIONS
   // =========================================================
 
-  Future<void> openEqualizer() async {
-    if (Platform.isAndroid) {
-      try {
-        final intent = AndroidIntent(
-          action: 'android.media.action.DISPLAY_AUDIO_EFFECT_CONTROL_PANEL',
-          flags: <int>[Flag.FLAG_ACTIVITY_NEW_TASK],
-          arguments: {
-            'android.media.extra.AUDIO_SESSION':
-                audioPlayer.androidAudioSessionId,
-          },
-        );
-        await intent.launch();
-      } catch (e) {
-        AppSnackbar.showErrorSnackBar(
-          "Error",
-          "No equalizer found on this device",
-        );
-      }
-    }
-  }
-
   Future<void> deleteSong(SongModel song) async {
     try {
       final file = File(song.data);

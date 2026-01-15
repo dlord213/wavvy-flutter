@@ -112,7 +112,10 @@ class FullPlayerSheet extends GetView<FullPlayerSheetController> {
                       SongMenuHelper.show(
                         context,
                         song,
-                        options: SongMenuOptions(showCustomEqualizer: true),
+                        options: SongMenuOptions(
+                          showCustomEqualizer: true,
+                          showSystemEqualizer: true,
+                        ),
                       );
                     },
                   ),

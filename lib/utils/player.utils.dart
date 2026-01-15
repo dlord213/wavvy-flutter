@@ -1,5 +1,7 @@
 import 'dart:io';
 
+import 'package:android_intent_plus/android_intent.dart';
+import 'package:android_intent_plus/flag.dart';
 import 'package:flutter/material.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:on_audio_query/on_audio_query.dart';
@@ -67,6 +69,24 @@ class PlayerUtils {
     }
 
     return parsedLyrics;
+  }
+
+  static Future<void> openEqualizer(dynamic sessionId) async {
+    if (Platform.isAndroid) {
+      try {
+        final intent = AndroidIntent(
+          action: 'android.media.action.DISPLAY_AUDIO_EFFECT_CONTROL_PANEL',
+          flags: <int>[Flag.FLAG_ACTIVITY_NEW_TASK],
+          arguments: {'android.media.extra.AUDIO_SESSION': sessionId},
+        );
+        await intent.launch();
+      } catch (e) {
+        AppSnackbar.showErrorSnackBar(
+          "Error",
+          "No equalizer found on this device",
+        );
+      }
+    }
   }
 
   static String extractTextFromDom(dynamic node) {
