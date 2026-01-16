@@ -15,6 +15,17 @@ class EqualizerService extends GetxService {
 
   AndroidEqualizer get equalizerInstance => _androidEqualizer;
 
+  final RxString currentPreset = 'Custom'.obs;
+  final Map<String, List<double>> presets = {
+    'Flat': [0, 0, 0, 0, 0],
+    'Bass Boost': [0.03, 0.04, 0, 0, 0],
+    'Rock': [5, 3, -1, 3, 5],
+    'Pop': [-1, 2, 4, 2, -1],
+    'Jazz': [3, 2, -1, 2, 3],
+    'Voice': [-2, -1, 3, 3, 1],
+    'Treble': [0, 0, 0, 4, 6],
+  };
+
   @override
   void onInit() {
     super.onInit();
@@ -24,8 +35,9 @@ class EqualizerService extends GetxService {
   /// Initialize: Await the Future parameters and read current state
   Future<void> _initEqualizer() async {
     try {
-      // FIX 1: 'parameters' is a Future, so we await it
       final params = await _androidEqualizer.parameters;
+
+      print(params);
 
       // Update bands list
       bands.assignAll(params.bands);
@@ -38,11 +50,9 @@ class EqualizerService extends GetxService {
         maxDecibels.value = params.maxDecibels! / 100.0;
       }
 
-      // FIX 2: 'enabled' is a bool, read it directly
       isEnabled.value = _androidEqualizer.enabled;
     } catch (e) {
       print("Equalizer Init Error: $e");
-      // This usually happens if the AudioPipeline isn't attached to the player yet
     }
   }
 
@@ -61,7 +71,6 @@ class EqualizerService extends GetxService {
     try {
       if (bandIndex < 0 || bandIndex >= bands.length) return;
 
-      // FIX 3: Call setGain on the BAND object
       final band = bands[bandIndex];
 
       // Convert dB to mB (1 dB = 100 mB)
@@ -77,5 +86,31 @@ class EqualizerService extends GetxService {
     for (int i = 0; i < bands.length; i++) {
       await setBandGain(i, 0.0);
     }
+  }
+
+  Future<void> applyPreset(String presetName) async {
+    if (!presets.containsKey(presetName)) return;
+
+    final values = presets[presetName]!;
+
+    // Safety check: Loop through available bands
+    final count = values.length < bands.length ? values.length : bands.length;
+
+    for (int i = 0; i < count; i++) {
+      final band = bands[i];
+      final double targetDb = values[i];
+
+      // FIX: Clamp the value between the device's actual physical limits
+      // This prevents the "Too High" error where value > max
+      final double clampedDb = targetDb.clamp(
+        minDecibels.value,
+        maxDecibels.value,
+      );
+
+      // Convert to millibels for the Android API
+      await band.setGain(clampedDb * 100.0);
+    }
+
+    currentPreset.value = presetName;
   }
 }

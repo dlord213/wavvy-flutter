@@ -13,7 +13,6 @@ class NativeEffectsService extends GetxService {
 
   final RxString currentReverbPreset = "None".obs;
 
-  /// Call this when AudioPlayer gives you a new Session ID
   Future<void> initEffects(int sessionId) async {
     try {
       await _channel.invokeMethod('initEffects', {'sessionId': sessionId});

@@ -60,26 +60,42 @@ class _EqualizerTab extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        "Enable Equalizer",
+                        "Equalizer",
                         style: theme.textTheme.titleMedium?.copyWith(
                           fontWeight: FontWeight.bold,
                         ),
                       ),
-                      const SizedBox(height: 4),
-                      Text(
-                        "Adjust frequencies",
-                        style: theme.textTheme.bodySmall,
+                      // NEW: Preset Selector
+                      PopupMenuButton<String>(
+                        onSelected: controller.applyPreset,
+                        itemBuilder: (context) {
+                          return controller.presets.keys.map((String choice) {
+                            return PopupMenuItem<String>(
+                              value: choice,
+                              child: Text(choice),
+                            );
+                          }).toList();
+                        },
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              controller.currentPreset.value,
+                              style: theme.textTheme.bodyMedium?.copyWith(
+                                color: theme.primaryColor,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            Icon(
+                              Icons.arrow_drop_down,
+                              color: theme.primaryColor,
+                            ),
+                          ],
+                        ),
                       ),
                     ],
                   ),
                 ),
-                IconButton(
-                  onPressed: controller.resetToFlat,
-                  icon: const Icon(Icons.refresh_rounded),
-                  tooltip: "Reset",
-                  color: theme.disabledColor,
-                ),
-                const SizedBox(width: 8),
                 Switch(
                   value: controller.isEnabled.value,
                   activeThumbColor: theme.primaryColor,
@@ -92,20 +108,7 @@ class _EqualizerTab extends StatelessWidget {
           // Bands Sliders
           Expanded(
             child: controller.bands.isEmpty
-                ? Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(
-                          Icons.equalizer_rounded,
-                          size: 64,
-                          color: theme.disabledColor,
-                        ),
-                        const SizedBox(height: 16),
-                        const Text("Equalizer not available"),
-                      ],
-                    ),
-                  )
+                ? const Center(child: Text("EQ Not Available"))
                 : LayoutBuilder(
                     builder: (context, constraints) {
                       return SingleChildScrollView(
@@ -144,15 +147,24 @@ class _EqualizerTab extends StatelessWidget {
     final band = controller.bands[index];
     final freqHz = band.centerFrequency;
 
-    String label = freqHz >= 1000
+    // Format Frequency Label (e.g. 1k, 60, 14k)
+    String freqLabel = freqHz >= 1000
         ? "${(freqHz / 1000).toStringAsFixed(0)}k"
         : "${freqHz.toInt()}";
 
     return StreamBuilder<double>(
       stream: band.gainStream,
+      initialData: band.gain,
       builder: (context, snapshot) {
-        final gainMb = snapshot.data ?? band.gain;
+        final gainMb = snapshot.data ?? 0.0;
         final currentGainDb = gainMb / 100.0;
+
+        final minDb = controller.minDecibels.value;
+        final maxDb = controller.maxDecibels.value;
+
+        // CRITICAL: Clamp value so it never exceeds device hardware limits
+        // This allows a +10dB preset to safely display as +5dB on limited phones
+        final safeSliderValue = currentGainDb.clamp(minDb, maxDb);
 
         return Container(
           width: 50,
@@ -160,48 +172,54 @@ class _EqualizerTab extends StatelessWidget {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.end,
             children: [
-              // dB Label
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
+                margin: const EdgeInsets.only(bottom: 12),
                 decoration: BoxDecoration(
-                  color: theme.colorScheme.surfaceContainerHighest,
-                  borderRadius: BorderRadius.circular(4),
+                  color: isEnabled
+                      ? theme.colorScheme.surfaceContainerHighest
+                      : theme.disabledColor.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(6),
                 ),
                 child: Text(
-                  "${currentGainDb > 0 ? '+' : ''}${currentGainDb.toStringAsFixed(1)}",
-                  style: TextStyle(
-                    fontSize: 10,
+                  "${safeSliderValue > 0 ? '+' : ''}${safeSliderValue.toStringAsFixed(1)}",
+                  style: theme.textTheme.labelSmall?.copyWith(
                     fontWeight: FontWeight.bold,
                     color: isEnabled
                         ? theme.colorScheme.onSurfaceVariant
                         : theme.disabledColor,
+                    fontFeatures: [const FontFeature.tabularFigures()],
                   ),
                 ),
               ),
-              const SizedBox(height: 12),
-              // Slider
+
               Expanded(
                 child: RotatedBox(
                   quarterTurns: 3,
                   child: SliderTheme(
                     data: SliderTheme.of(context).copyWith(
-                      trackHeight: 6,
+                      trackHeight: 4,
+                      trackShape: const RoundedRectSliderTrackShape(),
+                      activeTrackColor: theme.primaryColor,
+                      inactiveTrackColor:
+                          theme.colorScheme.surfaceContainerHighest,
+                      thumbColor: theme.primaryColor,
                       thumbShape: const RoundSliderThumbShape(
                         enabledThumbRadius: 8,
+                        elevation: 2,
                       ),
                       overlayShape: const RoundSliderOverlayShape(
-                        overlayRadius: 20,
+                        overlayRadius: 16,
                       ),
-                      activeTrackColor: theme.primaryColor,
-                      thumbColor: theme.primaryColor,
-                      inactiveTrackColor: theme.disabledColor.withValues(
-                        alpha: 0.1,
-                      ),
+                      disabledActiveTrackColor: theme.disabledColor,
+                      disabledInactiveTrackColor: theme.disabledColor
+                          .withValues(alpha: 0.1),
+                      disabledThumbColor: theme.disabledColor,
                     ),
                     child: Slider(
-                      min: controller.minDecibels.value,
-                      max: controller.maxDecibels.value,
-                      value: currentGainDb,
+                      value: safeSliderValue,
+                      min: minDb,
+                      max: maxDb,
                       onChanged: isEnabled
                           ? (val) => controller.setBandGain(index, val)
                           : null,
@@ -209,17 +227,15 @@ class _EqualizerTab extends StatelessWidget {
                   ),
                 ),
               ),
-              const SizedBox(height: 16),
-              // Frequency Label
+
+              const SizedBox(height: 12),
+
               Text(
-                label,
-                style: TextStyle(
-                  fontSize: 12,
+                freqLabel,
+                style: theme.textTheme.labelMedium?.copyWith(
                   fontWeight: FontWeight.w600,
                   color: isEnabled
-                      ? theme.textTheme.bodyMedium?.color?.withValues(
-                          alpha: 0.7,
-                        )
+                      ? theme.colorScheme.onSurface
                       : theme.disabledColor,
                 ),
               ),
@@ -248,23 +264,6 @@ class _EffectsTab extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // Reset Button Row
-          Row(
-            mainAxisAlignment: MainAxisAlignment.end,
-            children: [
-              TextButton.icon(
-                onPressed: () {
-                  controller.setBassBoost(0.0);
-                  controller.setVirtualizer(0.0);
-                  controller.setReverb("None");
-                },
-                icon: const Icon(Icons.refresh_rounded, size: 18),
-                label: const Text("Reset Effects"),
-                style: TextButton.styleFrom(
-                  foregroundColor: theme.disabledColor,
-                ),
-              ),
-            ],
-          ),
 
           // --- Bass & Virtualizer ---
           Text(
@@ -301,66 +300,85 @@ class _EffectsTab extends StatelessWidget {
             ],
           ),
 
-          const SizedBox(height: 32),
-          const Divider(),
-          const SizedBox(height: 20),
-
-          // --- Reverb ---
-          Text(
-            "Environment (Reverb)",
-            style: theme.textTheme.titleMedium?.copyWith(
-              fontWeight: FontWeight.bold,
-              color: theme.primaryColor,
-            ),
-          ),
           const SizedBox(height: 16),
 
-          Obx(() {
-            final current = controller.currentReverbPreset.value;
-            return Wrap(
-              spacing: 12,
-              runSpacing: 12,
-              children: [
-                _buildReverbChip(context, controller, "None", current),
-                _buildReverbChip(
-                  context,
-                  controller,
-                  "SmallRoom",
-                  current,
-                  label: "Small Room",
+          Row(
+            mainAxisAlignment: MainAxisAlignment.end,
+            children: [
+              TextButton.icon(
+                onPressed: () {
+                  controller.setBassBoost(0.0);
+                  controller.setVirtualizer(0.0);
+                  controller.setReverb("None");
+                },
+                icon: const Icon(Icons.refresh_rounded, size: 18),
+                label: const Text("Reset Effects"),
+                style: TextButton.styleFrom(
+                  foregroundColor: theme.disabledColor,
                 ),
-                _buildReverbChip(
-                  context,
-                  controller,
-                  "MediumRoom",
-                  current,
-                  label: "Medium Room",
-                ),
-                _buildReverbChip(
-                  context,
-                  controller,
-                  "LargeRoom",
-                  current,
-                  label: "Large Room",
-                ),
-                _buildReverbChip(
-                  context,
-                  controller,
-                  "MediumHall",
-                  current,
-                  label: "Medium Hall",
-                ),
-                _buildReverbChip(
-                  context,
-                  controller,
-                  "LargeHall",
-                  current,
-                  label: "Large Hall",
-                ),
-                _buildReverbChip(context, controller, "Plate", current),
-              ],
-            );
-          }),
+              ),
+            ],
+          ),
+          // const Divider(),
+
+          // const SizedBox(height: 20),
+
+          // // --- Reverb ---
+          // Text(
+          //   "Environment (Reverb)",
+          //   style: theme.textTheme.titleMedium?.copyWith(
+          //     fontWeight: FontWeight.bold,
+          //     color: theme.primaryColor,
+          //   ),
+          // ),
+          // const SizedBox(height: 16),
+
+          // Obx(() {
+          //   final current = controller.currentReverbPreset.value;
+          //   return Wrap(
+          //     spacing: 12,
+          //     runSpacing: 12,
+          //     children: [
+          //       _buildReverbChip(context, controller, "None", current),
+          //       _buildReverbChip(
+          //         context,
+          //         controller,
+          //         "SmallRoom",
+          //         current,
+          //         label: "Small Room",
+          //       ),
+          //       _buildReverbChip(
+          //         context,
+          //         controller,
+          //         "MediumRoom",
+          //         current,
+          //         label: "Medium Room",
+          //       ),
+          //       _buildReverbChip(
+          //         context,
+          //         controller,
+          //         "LargeRoom",
+          //         current,
+          //         label: "Large Room",
+          //       ),
+          //       _buildReverbChip(
+          //         context,
+          //         controller,
+          //         "MediumHall",
+          //         current,
+          //         label: "Medium Hall",
+          //       ),
+          //       _buildReverbChip(
+          //         context,
+          //         controller,
+          //         "LargeHall",
+          //         current,
+          //         label: "Large Hall",
+          //       ),
+          //       _buildReverbChip(context, controller, "Plate", current),
+          //     ],
+          //   );
+          // }),
         ],
       ),
     );
