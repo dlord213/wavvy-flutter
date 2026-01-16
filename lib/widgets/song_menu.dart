@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:on_audio_query/on_audio_query.dart';
 import 'package:wavvy/controllers/audio.controller.dart';
-import 'package:wavvy/screens/custom_equalizer/equalizer.screen.dart';
+import 'package:wavvy/screens/audio_effects/effects.screen.dart';
 import 'package:wavvy/screens/library/albums/view/album.screen.dart';
 import 'package:wavvy/screens/library/artists/view/artist.screen.dart';
 import 'package:wavvy/screens/library/playlists/playlists.controller.dart';
@@ -122,7 +122,7 @@ class SongMenuHelper {
                           color: textColor,
                           onTap: () {
                             Navigator.pop(context);
-                            Get.to(() => const EqualizerScreen());
+                            Get.to(() => const AudioEffectsScreen());
                           },
                         ),
 

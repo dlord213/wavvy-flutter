@@ -2,12 +2,15 @@ import 'package:audio_service/audio_service.dart';
 import 'package:get/get.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:on_audio_query/on_audio_query.dart';
+import 'package:wavvy/service/effects.service.dart';
 import 'package:wavvy/service/equalizer.service.dart'; // Needed for SongModel
 
 class WavvyAudioHandler extends BaseAudioHandler
     with QueueHandler, SeekHandler {
   final _enhancer = AndroidLoudnessEnhancer();
   final EqualizerService _eqService = Get.put(EqualizerService());
+  final NativeEffectsService _nativeFx = Get.put(NativeEffectsService());
+
   late AudioPipeline pipeline = AudioPipeline(
     androidAudioEffects: [_enhancer, _eqService.equalizerInstance],
   );
@@ -24,6 +27,12 @@ class WavvyAudioHandler extends BaseAudioHandler
 
     _eqService.equalizerInstance.setEnabled(true);
     _player.setSkipSilenceEnabled(false);
+
+    _player.androidAudioSessionIdStream.listen((sessionId) {
+      if (sessionId != null) {
+        _nativeFx.initEffects(sessionId);
+      }
+    });
 
     _player.playbackEventStream.listen((PlaybackEvent event) {
       final playing = _player.playing;
