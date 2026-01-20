@@ -18,12 +18,12 @@ class EqualizerService extends GetxService {
   final RxString currentPreset = 'Custom'.obs;
   final Map<String, List<double>> presets = {
     'Flat': [0, 0, 0, 0, 0],
-    'Bass Boost': [0.03, 0.04, 0, 0, 0],
-    'Rock': [5, 3, -1, 3, 5],
-    'Pop': [-1, 2, 4, 2, -1],
-    'Jazz': [3, 2, -1, 2, 3],
-    'Voice': [-2, -1, 3, 3, 1],
-    'Treble': [0, 0, 0, 4, 6],
+    'Bass Boost': [0.06, 0.04, 0, 0, 0],
+    'Rock': [0.05, 0.03, -0.01, 0.03, 0.05],
+    'Pop': [-0.01, 0.02, 0.04, 0.02, -0.01],
+    'Jazz': [0.03, 0.02, -0.01, 0.02, 0.03],
+    'Voice': [-0.02, -0.01, 0.03, 0.03, 0.01],
+    'Treble': [0, 0, 0, 0.04, 0.06],
   };
 
   @override
