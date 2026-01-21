@@ -28,7 +28,6 @@ class DownloadService extends GetxService {
     );
 
     if (!isSuccess) {
-      print('Could not register isolate port');
       return;
     }
 

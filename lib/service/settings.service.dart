@@ -135,7 +135,7 @@ class SettingsService extends GetxService {
   }
 
   void _applyTheme() {
-    Get.changeThemeMode(isDarkMode.value ? ThemeMode.dark : ThemeMode.light);
+    Get.forceAppUpdate();
   }
 
   ThemeData getLightTheme() => FlexThemeData.light(
@@ -155,6 +155,7 @@ class SettingsService extends GetxService {
   Future<void> updateThemeIndex(int index) async {
     currentThemeIndex.value = index;
     await _prefs.setInt(_kThemeSchemeIndex, index);
-    _applyTheme();
+
+    Get.changeTheme(isDarkMode.value ? getDarkTheme() : getLightTheme());
   }
 }

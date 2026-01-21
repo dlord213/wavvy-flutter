@@ -215,7 +215,6 @@ class AudioController extends GetxController {
         );
       }
     } catch (e) {
-      print("Delete error: $e");
       AppSnackbar.showErrorSnackBar(
         "Permission Denied",
         "Cannot delete file on this Android version.",
@@ -241,8 +240,6 @@ Format: ${song.fileExtension}
     } else {
       enhancer.setTargetGain(1.0);
     }
-
-    print("DEBUG: ${enhancer.targetGain}");
   }
 
   // =========================================================
@@ -272,9 +269,7 @@ Format: ${song.fileExtension}
         artists.assignAll(artistsList);
 
         _applySort();
-      } catch (e) {
-        print("Error fetching library: $e");
-      }
+      } catch (e) {}
     } else {
       AppSnackbar.showErrorSnackBar(
         "Cannot fetch songs",
@@ -498,9 +493,7 @@ Format: ${song.fileExtension}
         initialIndex: index,
       );
       audioPlayer.play();
-    } catch (e) {
-      print("Error playing song: $e");
-    }
+    } catch (e) {}
   }
 
   Future<void> addToQueue(SongModel song) async {
@@ -789,9 +782,7 @@ Format: ${song.fileExtension}
         yearCtrl.text = metadata.year?.toString() ?? "";
         genreCtrl.text = metadata.genre ?? "";
       }
-    } catch (e) {
-      print("Error reading tags: $e");
-    }
+    } catch (e) {}
 
     // 3. Show Dialog
     await Get.dialog(
@@ -894,9 +885,7 @@ Format: ${song.fileExtension}
       Metadata? currentMetadata;
       try {
         currentMetadata = await MetadataGod.readMetadata(file: song.data);
-      } catch (e) {
-        print("Could not read existing metadata: $e");
-      }
+      } catch (e) {}
 
       // 2. Prepare new Metadata object
       //    We copy existing picture/track info so they aren't lost
@@ -929,8 +918,6 @@ Format: ${song.fileExtension}
 
       AppSnackbar.showSnackbar("Success", "Tags updated successfully");
     } catch (e) {
-      print("Tag Edit Error: $e");
-
       AppSnackbar.showErrorSnackBar(
         "Error",
         "Could not write tags. Permission denied or file read-only.",

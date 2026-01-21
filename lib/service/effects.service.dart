@@ -16,9 +16,7 @@ class NativeEffectsService extends GetxService {
   Future<void> initEffects(int sessionId) async {
     try {
       await _channel.invokeMethod('initEffects', {'sessionId': sessionId});
-    } catch (e) {
-      print("Failed to init native effects: $e");
-    }
+    } catch (e) {}
   }
 
   Future<void> setBassBoost(double strength) async {
@@ -29,9 +27,7 @@ class NativeEffectsService extends GetxService {
 
       isBassBoostEnabled.value = val > 0;
       bassBoostStrength.value = val.toDouble();
-    } catch (e) {
-      print("Bass Boost Error: $e");
-    }
+    } catch (e) {}
   }
 
   Future<void> setVirtualizer(double strength) async {
@@ -41,9 +37,7 @@ class NativeEffectsService extends GetxService {
 
       isVirtualizerEnabled.value = val > 0;
       virtualizerStrength.value = val.toDouble();
-    } catch (e) {
-      print("Virtualizer Error: $e");
-    }
+    } catch (e) {}
   }
 
   Future<void> setReverb(String preset) async {
@@ -51,9 +45,7 @@ class NativeEffectsService extends GetxService {
     try {
       await _channel.invokeMethod('setReverb', {'preset': preset});
       currentReverbPreset.value = preset;
-    } catch (e) {
-      print("Reverb Error: $e");
-    }
+    } catch (e) {}
   }
 
   // Cleanup when app closes (optional, usually OS handles it)

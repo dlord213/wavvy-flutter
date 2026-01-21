@@ -102,7 +102,7 @@ class TikTokSearchScreen extends StatelessWidget {
                           height: 250,
                           width: double.infinity,
                           fit: BoxFit.cover,
-                          errorBuilder: (_, __, ___) => Container(
+                          errorBuilder: (_, _, _) => Container(
                             height: 250,
                             color: Colors.grey[300],
                             child: const Center(

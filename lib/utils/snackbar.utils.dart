@@ -6,8 +6,8 @@ class AppSnackbar {
     if (Get.context == null) return;
 
     Get.snackbar(
-      "${title}",
-      "${subtitle}",
+      title,
+      subtitle,
       snackPosition: SnackPosition.TOP,
       barBlur: 0,
       backgroundColor: Get.context?.theme.colorScheme.surfaceContainer,
@@ -20,10 +20,10 @@ class AppSnackbar {
 
   static void showErrorSnackBar(String title, String subtitle) {
     if (Get.context == null) return;
-    
+
     Get.snackbar(
-      "${title}",
-      "${subtitle}",
+      title,
+      subtitle,
       snackPosition: SnackPosition.TOP,
       barBlur: 0,
       backgroundColor: Get.context?.theme.colorScheme.errorContainer,

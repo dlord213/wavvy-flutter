@@ -19,8 +19,9 @@ class SongsHeaderAppBar extends GetView<AudioController> {
 
         // --- MOST PLAYED ---
         Obx(() {
-          if (controller.mostPlayedSongs.isEmpty)
+          if (controller.mostPlayedSongs.isEmpty) {
             return const SizedBox.shrink();
+          }
           return _buildSection("Most Played", controller.mostPlayedSongs);
         }),
       ],

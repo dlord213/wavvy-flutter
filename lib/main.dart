@@ -53,7 +53,7 @@ Future<void> main() async {
   await MetadataGod.initialize();
 
   Get.put(DownloadService());
-  Get.put(SettingsService());
+  await Get.putAsync(() => SettingsService().init());
 
   try {
     final session = await AudioSession.instance;

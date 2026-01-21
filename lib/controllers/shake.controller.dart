@@ -49,7 +49,6 @@ class ShakeController extends GetxController {
     if (now - _lastShakeTime > _debounceTimeMs) {
       _lastShakeTime = now;
 
-      print("Shake detected! Skipping song...");
 
       if (_audioController.audioPlayer.hasNext) {
         _audioController.next();

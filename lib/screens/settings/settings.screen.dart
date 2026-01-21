@@ -44,6 +44,7 @@ class SettingsScreen extends StatelessWidget {
               physics: const BouncingScrollPhysics(),
               padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
               children: [
+                const SizedBox(height: 8),
                 const ThemeSelector(),
 
                 const SizedBox(height: 8),

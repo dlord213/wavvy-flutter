@@ -3,7 +3,6 @@ import 'dart:isolate';
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:wavvy/controllers/audio.controller.dart';
 import 'package:wavvy/service/downloader.service.dart';
 import 'package:wavvy/utils/snackbar.utils.dart';
 import 'package:youtube_explode_dart/youtube_explode_dart.dart';
@@ -12,7 +11,6 @@ import 'package:path_provider/path_provider.dart';
 
 class YtdlpController extends GetxController {
   final _yt = YoutubeExplode();
-  final AudioController _ac = Get.find();
   final DownloadService _downloadService = Get.find();
 
   // --- STATE MANAGEMENT FIX ---
@@ -71,8 +69,6 @@ class YtdlpController extends GetxController {
     final tasks = await FlutterDownloader.loadTasksWithRawQuery(
       query: "SELECT * FROM task WHERE task_id='$taskId'",
     );
-
-    print("Background Isolate -> CONVERTING");
 
     if (tasks == null || tasks.isEmpty) return;
 

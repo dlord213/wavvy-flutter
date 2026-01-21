@@ -9,6 +9,7 @@ import 'package:screenshot/screenshot.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:wavvy/models/lyric.dart';
 import 'package:wavvy/controllers/audio.controller.dart';
+import 'package:wavvy/utils/snackbar.utils.dart';
 
 class LyricCardGenerator extends StatefulWidget {
   final SongModel song;
@@ -97,7 +98,7 @@ class _LyricCardGeneratorState extends State<LyricCardGenerator> {
         ], text: 'Listening to ${widget.song.title} on Wavvy 🎵');
       }
     } catch (e) {
-      print("Share Error: $e");
+      AppSnackbar.showErrorSnackBar("Error sharing", "$e");
     }
   }
 

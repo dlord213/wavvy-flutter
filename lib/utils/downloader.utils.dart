@@ -1,6 +1,5 @@
 import 'dart:ui';
 import 'dart:isolate';
-import 'package:flutter_downloader/flutter_downloader.dart';
 
 @pragma('vm:entry-point')
 void downloadCallback(String id, int status, int progress) {

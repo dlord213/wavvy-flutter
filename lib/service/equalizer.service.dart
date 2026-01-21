@@ -37,8 +37,6 @@ class EqualizerService extends GetxService {
     try {
       final params = await _androidEqualizer.parameters;
 
-      print(params);
-
       // Update bands list
       bands.assignAll(params.bands);
 
@@ -51,9 +49,7 @@ class EqualizerService extends GetxService {
       }
 
       isEnabled.value = _androidEqualizer.enabled;
-    } catch (e) {
-      print("Equalizer Init Error: $e");
-    }
+    } catch (e) {}
   }
 
   /// Toggle the EQ on/off
@@ -61,9 +57,7 @@ class EqualizerService extends GetxService {
     try {
       await _androidEqualizer.setEnabled(value);
       isEnabled.value = value; // Update local state
-    } catch (e) {
-      print("Error toggling Equalizer: $e");
-    }
+    } catch (e) {}
   }
 
   /// Set the gain for a specific band
@@ -77,9 +71,7 @@ class EqualizerService extends GetxService {
       final double gainMb = gainDb * 100.0;
 
       await band.setGain(gainMb);
-    } catch (e) {
-      print("Error setting band gain: $e");
-    }
+    } catch (e) {}
   }
 
   Future<void> resetToFlat() async {
