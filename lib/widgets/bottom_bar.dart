@@ -21,9 +21,8 @@ class BottomMiniPlayer extends GetView<AudioController> {
     return Obx(() {
       final song = controller.currentSong.value;
 
-      final backgroundColor =
-          controller.playerColor.value ??
-          context.theme.colorScheme.surfaceContainerHighest;
+      final backgroundColor = controller.playerColor.value ?? 
+          (context.isDarkMode ? Colors.grey[900]! : Colors.white);
 
       final textColor = controller.playerColor.value != null
           ? controller.playerTextColor.value
@@ -33,9 +32,9 @@ class BottomMiniPlayer extends GetView<AudioController> {
 
       final double totalHeight;
       if (song != null) {
-        totalHeight = (showTabView ? 130 : 80) + bottomPadding;
+        totalHeight = (showTabView ? 140 : 88) + bottomPadding;
       } else {
-        totalHeight = (showTabView ? 50 : 0) + bottomPadding;
+        totalHeight = (showTabView ? 60 : 0) + bottomPadding;
       }
 
       return GestureDetector(
@@ -52,66 +51,90 @@ class BottomMiniPlayer extends GetView<AudioController> {
           );
         },
         child: AnimatedContainer(
-          padding: EdgeInsets.only(bottom: bottomPadding),
           duration: const Duration(milliseconds: 300),
-          height: totalHeight,
+          margin: EdgeInsets.only(
+            left: 12, 
+            right: 12, 
+            bottom: bottomPadding > 0 ? bottomPadding : 12
+          ),
+          height: song != null ? totalHeight - bottomPadding : (showTabView ? 60 : 0),
           decoration: BoxDecoration(
             color: backgroundColor,
-            borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
+            borderRadius: BorderRadius.circular(24),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.1),
+                blurRadius: 20,
+                offset: const Offset(0, 8),
+              ),
+            ],
           ),
           child: Column(
             mainAxisSize: MainAxisSize.min,
+            mainAxisAlignment: MainAxisAlignment.center,
             children: [
               // --- (Only if song exists) ---
               if (song != null) ...[
+                const SizedBox(height: 8),
                 Obx(() {
-                  final max = controller.totalDuration.value.inMilliseconds
-                      .toDouble();
-                  final current = controller
-                      .currentPosition
-                      .value
-                      .inMilliseconds
-                      .toDouble();
-                  final value = (max > 0)
-                      ? (current / max).clamp(0.0, 1.0)
-                      : 0.0;
+                  final max = controller.totalDuration.value.inMilliseconds.toDouble();
+                  final current = controller.currentPosition.value.inMilliseconds.toDouble();
+                  final value = (max > 0) ? (current / max).clamp(0.0, 1.0) : 0.0;
 
                   return Container(
-                    margin: EdgeInsets.symmetric(horizontal: 12),
-                    child: LinearProgressIndicator(
-                      value: value,
-                      backgroundColor: Colors.transparent,
-                      valueColor: AlwaysStoppedAnimation<Color>(
-                        backgroundColor.lighten(30),
+                    height: 4,
+                    margin: const EdgeInsets.symmetric(horizontal: 20),
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(2),
+                      child: LinearProgressIndicator(
+                        value: value,
+                        backgroundColor: textColor.withValues(alpha: 0.1),
+                        valueColor: AlwaysStoppedAnimation<Color>(
+                          controller.playerColor.value != null 
+                             ? backgroundColor.lighten(30) 
+                             : context.theme.primaryColor,
+                        ),
                       ),
-                      minHeight: 4,
                     ),
                   );
                 }),
+                
+                const SizedBox(height: 8),
 
                 SizedBox(
-                  height: 76,
+                  height: 64,
                   child: Row(
                     children: [
                       // Artwork
                       Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 12),
-                        child: QueryArtworkWidget(
-                          id: song.id,
-                          type: ArtworkType.AUDIO,
-                          artworkFit: BoxFit.cover,
-                          artworkWidth: 48,
-                          artworkHeight: 48,
-                          nullArtworkWidget: Container(
-                            width: 48,
-                            height: 48,
-                            decoration: BoxDecoration(
-                              color: Colors.black12,
-                              borderRadius: BorderRadius.circular(6),
-                            ),
-                            child: Icon(Icons.music_note, color: textColor),
+                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                        child: Container(
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(12),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withValues(alpha: 0.1),
+                                blurRadius: 8,
+                                offset: const Offset(0, 2),
+                              )
+                            ]
                           ),
-                          artworkBorder: BorderRadius.circular(6),
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(12),
+                            child: QueryArtworkWidget(
+                              id: song.id,
+                              type: ArtworkType.AUDIO,
+                              artworkFit: BoxFit.cover,
+                              artworkWidth: 52,
+                              artworkHeight: 52,
+                              nullArtworkWidget: Container(
+                                width: 52,
+                                height: 52,
+                                color: textColor.withValues(alpha: 0.05),
+                                child: Icon(Icons.music_note_rounded, color: textColor),
+                              ),
+                            ),
+                          ),
                         ),
                       ),
 
@@ -126,7 +149,7 @@ class BottomMiniPlayer extends GetView<AudioController> {
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                               style: TextStyle(
-                                fontWeight: FontWeight.w600,
+                                fontWeight: FontWeight.w700,
                                 fontSize: 15,
                                 color: textColor,
                               ),
@@ -138,6 +161,7 @@ class BottomMiniPlayer extends GetView<AudioController> {
                               overflow: TextOverflow.ellipsis,
                               style: TextStyle(
                                 fontSize: 13,
+                                fontWeight: FontWeight.w500,
                                 color: subTextColor,
                               ),
                             ),
@@ -146,36 +170,45 @@ class BottomMiniPlayer extends GetView<AudioController> {
                       ),
 
                       // Controls
-                      Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          IconButton(
-                            icon: Icon(
-                              Icons.skip_previous_rounded,
-                              color: textColor,
-                              size: 28,
+                      Padding(
+                        padding: const EdgeInsets.only(right: 8),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            IconButton(
+                              icon: Icon(
+                                Icons.skip_previous_rounded,
+                                color: textColor,
+                                size: 30,
+                              ),
+                              onPressed: controller.previous,
                             ),
-                            onPressed: controller.previous,
-                          ),
-                          IconButton(
-                            icon: Icon(
-                              controller.isPlaying.value
-                                  ? Icons.pause_rounded
-                                  : Icons.play_arrow_rounded,
-                              color: textColor,
-                              size: 28,
+                            Container(
+                              decoration: BoxDecoration(
+                                color: textColor.withValues(alpha: 0.1),
+                                shape: BoxShape.circle,
+                              ),
+                              child: IconButton(
+                                icon: Icon(
+                                  controller.isPlaying.value
+                                      ? Icons.pause_rounded
+                                      : Icons.play_arrow_rounded,
+                                  color: textColor,
+                                  size: 30,
+                                ),
+                                onPressed: controller.togglePlay,
+                              ),
                             ),
-                            onPressed: controller.togglePlay,
-                          ),
-                          IconButton(
-                            icon: Icon(
-                              Icons.skip_next_rounded,
-                              color: textColor,
-                              size: 28,
+                            IconButton(
+                              icon: Icon(
+                                Icons.skip_next_rounded,
+                                color: textColor,
+                                size: 30,
+                              ),
+                              onPressed: controller.next,
                             ),
-                            onPressed: controller.next,
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
                     ],
                   ),
@@ -183,23 +216,38 @@ class BottomMiniPlayer extends GetView<AudioController> {
               ],
 
               // --- (Only if showTabView) ---
-              if (showTabView)
+              if (showTabView) ...[
+                if (song != null) const SizedBox(height: 4),
                 SizedBox(
                   height: 48,
                   child: TabBar(
                     dividerColor: Colors.transparent,
-                    labelColor: textColor,
+                    labelColor: controller.playerColor.value != null 
+                        ? textColor 
+                        : context.theme.primaryColor,
                     unselectedLabelColor: subTextColor.withValues(alpha: 0.5),
-                    indicatorColor: backgroundColor.lighten(30),
-                    indicatorSize: TabBarIndicatorSize.label,
+                    indicatorColor: Colors.transparent, // Handle indication via tab style, or keep line
+                    // Custom indicator
+                    indicator: UnderlineTabIndicator(
+                      borderSide: BorderSide(
+                        width: 3, 
+                        color: controller.playerColor.value != null 
+                            ? backgroundColor.lighten(30) 
+                            : context.theme.primaryColor
+                      ),
+                      insets: const EdgeInsets.symmetric(horizontal: 32),
+                    ),
+                    indicatorSize: TabBarIndicatorSize.tab,
                     tabs: [
-                      Tab(icon: Icon(Icons.music_note)),
-                      Tab(icon: Icon(Icons.library_books)),
+                      Tab(icon: Icon(Icons.music_note_rounded)),
+                      Tab(icon: Icon(Icons.library_books_rounded)),
                       if (_settings.enableDownloader.value)
                         Tab(icon: Icon(Icons.downloading_rounded)),
                     ],
                   ),
                 ),
+                if (song == null) const Spacer(),
+              ]
             ],
           ),
         ),

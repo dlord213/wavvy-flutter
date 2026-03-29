@@ -59,7 +59,7 @@ class FullPlayerSheetController extends GetxController {
     );
   }
 
-  void _showInfoDialog(
+  void showInfoDialog(
     BuildContext context,
     SongModel song,
     Color bgColor,

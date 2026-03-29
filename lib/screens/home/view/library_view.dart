@@ -17,6 +17,7 @@ class LibraryView extends GetView<HomeController> {
       final playlists = controller.audioController.localPlaylists;
 
       return CustomScrollView(
+        physics: const BouncingScrollPhysics(),
         slivers: [
           // ---------------------------------------------------------
           // ALBUMS SECTION
@@ -27,13 +28,13 @@ class LibraryView extends GetView<HomeController> {
               onTap: () => Get.toNamed("/albums"),
             ),
             SliverPadding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
+              padding: const EdgeInsets.symmetric(horizontal: 20),
               sliver: SliverGrid(
                 gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
-                  maxCrossAxisExtent: 200,
-                  childAspectRatio: 0.8,
-                  crossAxisSpacing: 16,
-                  mainAxisSpacing: 16,
+                  maxCrossAxisExtent: 220,
+                  childAspectRatio: 0.75,
+                  crossAxisSpacing: 20,
+                  mainAxisSpacing: 20,
                 ),
                 delegate: SliverChildBuilderDelegate(
                   (context, index) {
@@ -41,47 +42,77 @@ class LibraryView extends GetView<HomeController> {
                     return GestureDetector(
                       onTap: () =>
                           Get.to(() => AlbumDetailScreen(album: album)),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Expanded(
-                            child: Container(
-                              width: double.infinity,
-                              decoration: BoxDecoration(
-                                borderRadius: BorderRadius.circular(12),
-                                color: context.isDarkMode
-                                    ? Colors.grey[800]
-                                    : Colors.grey[200],
-                              ),
-                              child: QueryArtworkWidget(
-                                id: album.id,
-                                type: ArtworkType.ALBUM,
-                                artworkFit: BoxFit.cover,
-                                artworkBorder: BorderRadius.circular(12),
-                                nullArtworkWidget: const Icon(
-                                  Icons.album,
-                                  size: 40,
-                                  color: Colors.grey,
+                      child: Container(
+                        decoration: BoxDecoration(
+                          color: context.isDarkMode
+                              ? Colors.grey[900]
+                              : Colors.white,
+                          borderRadius: BorderRadius.circular(24),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withValues(alpha: 0.05),
+                              blurRadius: 15,
+                              offset: const Offset(0, 8),
+                            ),
+                          ],
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Expanded(
+                              child: Container(
+                                width: double.infinity,
+                                decoration: BoxDecoration(
+                                  borderRadius: const BorderRadius.vertical(
+                                      top: Radius.circular(24)),
+                                  color: context.isDarkMode
+                                      ? Colors.grey[800]
+                                      : Colors.grey[100],
+                                ),
+                                child: ClipRRect(
+                                  borderRadius: const BorderRadius.vertical(
+                                      top: Radius.circular(24)),
+                                  child: QueryArtworkWidget(
+                                    id: album.id,
+                                    type: ArtworkType.ALBUM,
+                                    artworkFit: BoxFit.cover,
+                                    nullArtworkWidget: const Icon(
+                                      Icons.album_rounded,
+                                      size: 48,
+                                      color: Colors.grey,
+                                    ),
+                                  ),
                                 ),
                               ),
                             ),
-                          ),
-                          const SizedBox(height: 8),
-                          Text(
-                            album.album,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: const TextStyle(fontWeight: FontWeight.w600),
-                          ),
-                          Text(
-                            "${album.numOfSongs} Songs",
-                            style: TextStyle(
-                              fontSize: 12,
-                              color: context.theme.textTheme.bodyMedium?.color
-                                  ?.withValues(alpha: 0.6),
+                            Padding(
+                              padding: const EdgeInsets.all(12),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    album.album,
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: const TextStyle(
+                                      fontWeight: FontWeight.w700,
+                                      fontSize: 14,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    "${album.numOfSongs} Songs",
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      color: context.theme.textTheme.bodyMedium?.color
+                                          ?.withValues(alpha: 0.6),
+                                    ),
+                                  ),
+                                ],
+                              ),
                             ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
                     );
                   },
@@ -103,13 +134,13 @@ class LibraryView extends GetView<HomeController> {
             ),
 
             SliverPadding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
+              padding: const EdgeInsets.symmetric(horizontal: 20),
               sliver: SliverGrid(
                 gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
-                  maxCrossAxisExtent: 200,
+                  maxCrossAxisExtent: 180,
                   childAspectRatio: 0.8,
-                  crossAxisSpacing: 16,
-                  mainAxisSpacing: 16,
+                  crossAxisSpacing: 20,
+                  mainAxisSpacing: 20,
                 ),
                 delegate: SliverChildBuilderDelegate(
                   (context, index) {
@@ -126,31 +157,44 @@ class LibraryView extends GetView<HomeController> {
                               child: Container(
                                 decoration: BoxDecoration(
                                   shape: BoxShape.circle,
-                                  color: context.isDarkMode
-                                      ? Colors.grey[800]
-                                      : Colors.grey[200],
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: Colors.black.withValues(alpha: 0.1),
+                                      blurRadius: 20,
+                                      offset: const Offset(0, 10),
+                                    ),
+                                  ],
                                 ),
-                                child: QueryArtworkWidget(
-                                  id: artist.id,
-                                  type: ArtworkType.ARTIST,
-                                  artworkFit: BoxFit.cover,
-                                  artworkBorder: BorderRadius.circular(100),
-                                  nullArtworkWidget: const Icon(
-                                    Icons.person,
-                                    size: 40,
-                                    color: Colors.grey,
+                                child: ClipOval(
+                                  child: Container(
+                                    color: context.isDarkMode
+                                        ? Colors.grey[800]
+                                        : Colors.grey[100],
+                                    child: QueryArtworkWidget(
+                                      id: artist.id,
+                                      type: ArtworkType.ARTIST,
+                                      artworkFit: BoxFit.cover,
+                                      nullArtworkWidget: const Icon(
+                                        Icons.person_rounded,
+                                        size: 48,
+                                        color: Colors.grey,
+                                      ),
+                                    ),
                                   ),
                                 ),
                               ),
                             ),
                           ),
-                          const SizedBox(height: 8),
+                          const SizedBox(height: 12),
                           Text(
                             artist.artist,
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                             textAlign: TextAlign.center,
-                            style: const TextStyle(fontWeight: FontWeight.w600),
+                            style: const TextStyle(
+                              fontWeight: FontWeight.w700,
+                              fontSize: 14,
+                            ),
                           ),
                         ],
                       ),
@@ -164,6 +208,9 @@ class LibraryView extends GetView<HomeController> {
             ),
           ],
 
+          // ---------------------------------------------------------
+          // PLAYLISTS SECTION
+          // ---------------------------------------------------------
           _LibrarySectionHeader(
             title: "Playlists",
             onTap: () => Get.toNamed("/playlists"),
@@ -171,13 +218,13 @@ class LibraryView extends GetView<HomeController> {
 
           if (playlists.isNotEmpty) ...[
             SliverPadding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
+              padding: const EdgeInsets.symmetric(horizontal: 20),
               sliver: SliverGrid(
                 gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
-                  maxCrossAxisExtent: 200,
+                  maxCrossAxisExtent: 180,
                   childAspectRatio: 0.8,
-                  crossAxisSpacing: 16,
-                  mainAxisSpacing: 16,
+                  crossAxisSpacing: 20,
+                  mainAxisSpacing: 20,
                 ),
                 delegate: SliverChildBuilderDelegate(
                   (context, index) {
@@ -199,30 +246,50 @@ class LibraryView extends GetView<HomeController> {
                               aspectRatio: 1,
                               child: Container(
                                 decoration: BoxDecoration(
+                                  gradient: LinearGradient(
+                                    colors: context.isDarkMode
+                                        ? [
+                                            Colors.grey[800]!,
+                                            Colors.grey[900]!
+                                          ]
+                                        : [
+                                            Colors.grey[100]!,
+                                            Colors.grey[300]!
+                                          ],
+                                    begin: Alignment.topLeft,
+                                    end: Alignment.bottomRight,
+                                  ),
                                   shape: BoxShape.circle,
-                                  color: context.isDarkMode
-                                      ? Colors.grey[800]
-                                      : Colors.grey[200],
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: Colors.black.withValues(alpha: 0.08),
+                                      blurRadius: 15,
+                                      offset: const Offset(0, 8),
+                                    ),
+                                  ],
                                 ),
                                 child: Center(
                                   child: Icon(
                                     Icons.queue_music_rounded,
-                                    size: 40,
+                                    size: 48,
                                     color: context.isDarkMode
-                                        ? Colors.white38
-                                        : Colors.grey,
+                                        ? Colors.white54
+                                        : Colors.grey[700],
                                   ),
                                 ),
                               ),
                             ),
                           ),
-                          const SizedBox(height: 8),
+                          const SizedBox(height: 12),
                           Text(
                             playlist['name'],
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                             textAlign: TextAlign.center,
-                            style: const TextStyle(fontWeight: FontWeight.w600),
+                            style: const TextStyle(
+                              fontWeight: FontWeight.w700,
+                              fontSize: 14,
+                            ),
                           ),
                         ],
                       ),
@@ -236,7 +303,7 @@ class LibraryView extends GetView<HomeController> {
               ),
             ),
           ],
-          const SliverToBoxAdapter(child: SizedBox(height: 16)),
+          const SliverToBoxAdapter(child: SizedBox(height: 32)),
         ],
       );
     });
@@ -253,13 +320,15 @@ class _LibrarySectionHeader extends StatelessWidget {
   Widget build(BuildContext context) {
     return SliverToBoxAdapter(
       child: Padding(
-        padding: const EdgeInsets.fromLTRB(16, 24, 16, 12),
+        padding: const EdgeInsets.fromLTRB(20, 32, 20, 16),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          crossAxisAlignment: CrossAxisAlignment.baseline,
+          textBaseline: TextBaseline.alphabetic,
           children: [
             Text(
               title,
-              style: context.textTheme.titleLarge?.copyWith(
+              style: context.textTheme.headlineSmall?.copyWith(
                 fontWeight: FontWeight.w800,
                 letterSpacing: -0.5,
               ),
@@ -278,13 +347,13 @@ class _LibrarySectionHeader extends StatelessWidget {
                       "See all",
                       style: TextStyle(
                         color: context.theme.primaryColor,
-                        fontWeight: FontWeight.w600,
+                        fontWeight: FontWeight.w700,
                       ),
                     ),
                     const SizedBox(width: 4),
                     Icon(
                       Icons.arrow_forward_ios_rounded,
-                      size: 12,
+                      size: 14,
                       color: context.theme.primaryColor,
                     ),
                   ],

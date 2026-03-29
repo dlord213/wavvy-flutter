@@ -45,20 +45,20 @@ class FullPlayerSheet extends GetView<FullPlayerSheetController> {
         ),
         child: Container(
           decoration: BoxDecoration(
-            borderRadius: BorderRadius.only(
-              topLeft: Radius.circular(12),
-              topRight: Radius.circular(12),
+            borderRadius: const BorderRadius.only(
+              topLeft: Radius.circular(24),
+              topRight: Radius.circular(24),
             ),
             gradient: LinearGradient(
               begin: Alignment.topCenter,
               end: Alignment.bottomCenter,
-              colors: [seedColor, seedColor.darken(20), navBarColor],
-              stops: const [0.0, 0.6, 1.0],
+              colors: [seedColor, seedColor.darken(15), navBarColor],
+              stops: const [0.0, 0.4, 1.0],
             ),
           ),
           child: Padding(
             padding: EdgeInsets.only(
-              top: context.mediaQueryPadding.top + 36,
+              top: context.mediaQueryPadding.top + 24,
               bottom: context.mediaQueryPadding.bottom,
             ),
             child: Scaffold(
@@ -72,6 +72,7 @@ class FullPlayerSheet extends GetView<FullPlayerSheetController> {
                   icon: Icon(
                     Icons.keyboard_arrow_down_rounded,
                     color: mainTextColor,
+                    size: 32,
                   ),
                   onPressed: () => Navigator.pop(context),
                 ),
@@ -80,23 +81,43 @@ class FullPlayerSheet extends GetView<FullPlayerSheetController> {
                   switch (controller.sheetPageIndex.value) {
                     case 1:
                       return Text(
-                        "Queue",
-                        style: TextStyle(color: mainTextColor),
+                        "Playing Next",
+                        style: TextStyle(color: mainTextColor, fontWeight: FontWeight.bold, fontSize: 16),
                       );
                     case 2:
                       return Text(
                         "Lyrics",
-                        style: TextStyle(color: mainTextColor),
+                        style: TextStyle(color: mainTextColor, fontWeight: FontWeight.bold, fontSize: 16),
                       );
                     case 3:
                       return Text(
-                        "Artist Info",
-                        style: TextStyle(color: mainTextColor),
+                        "Artist",
+                        style: TextStyle(color: mainTextColor, fontWeight: FontWeight.bold, fontSize: 16),
                       );
                     default:
-                      return Text(
-                        song.album ?? "Now Playing",
-                        style: TextStyle(color: subTextColor, fontSize: 14),
+                      return Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            "PLAYING FROM ALBUM",
+                            style: TextStyle(
+                              color: subTextColor, 
+                              fontSize: 10, 
+                              letterSpacing: 1.5,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                          Text(
+                            song.album ?? "Single",
+                            style: TextStyle(
+                              color: mainTextColor, 
+                              fontSize: 14,
+                              fontWeight: FontWeight.bold,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ],
                       );
                   }
                 }),
@@ -104,17 +125,19 @@ class FullPlayerSheet extends GetView<FullPlayerSheetController> {
                   IconButton(
                     icon: Obx(
                       () => Icon(
-                        Icons.more_vert,
+                        Icons.more_horiz_rounded,
                         color: controller.audioController.playerTextColor.value,
+                        size: 28,
                       ),
                     ),
                     onPressed: () {
                       SongMenuHelper.show(
                         context,
                         song,
-                        options: SongMenuOptions(
+                        options: const SongMenuOptions(
                           showCustomEqualizer: true,
                           showSystemEqualizer: true,
+                          showSongInfo: true,
                         ),
                       );
                     },
@@ -128,8 +151,8 @@ class FullPlayerSheet extends GetView<FullPlayerSheetController> {
                   Expanded(
                     child: PageView(
                       controller: controller.pageController,
-                      scrollBehavior: MaterialScrollBehavior(),
-                      physics: NeverScrollableScrollPhysics(),
+                      scrollBehavior: const MaterialScrollBehavior(),
+                      physics: const NeverScrollableScrollPhysics(),
                       onPageChanged: (index) {
                         controller.sheetPageIndex.value = index;
                         if (index == 2) {
@@ -163,42 +186,46 @@ class FullPlayerSheet extends GetView<FullPlayerSheetController> {
 
                   // --- BOTTOM TABS ---
                   SingleChildScrollView(
-                    padding: EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                     scrollDirection: Axis.horizontal,
                     child: Row(
-                      spacing: 12,
-                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         _buildTabButton(
                           0,
                           "Player",
-                          Icons.music_note,
+                          Icons.music_note_rounded,
                           mainTextColor,
-                          seedColor.brighten(10),
+                          seedColor.brighten(20),
                         ),
+                        const SizedBox(width: 8),
                         _buildTabButton(
                           1,
                           "Queue",
-                          Icons.queue_music,
+                          Icons.queue_music_rounded,
                           mainTextColor,
-                          seedColor.brighten(10),
+                          seedColor.brighten(20),
                         ),
-                        if (_settings.enableLyricsFetching.value)
+                        if (_settings.enableLyricsFetching.value) ...[
+                          const SizedBox(width: 8),
                           _buildTabButton(
                             2,
                             "Lyrics",
                             Icons.lyrics_rounded,
                             mainTextColor,
-                            seedColor.brighten(10),
+                            seedColor.brighten(20),
                           ),
-                        if (_settings.enableArtistInfoFetching.value)
+                        ],
+                        if (_settings.enableArtistInfoFetching.value) ...[
+                          const SizedBox(width: 8),
                           _buildTabButton(
                             3,
                             "Artist",
                             Icons.person_rounded,
                             mainTextColor,
-                            seedColor.brighten(10),
+                            seedColor.brighten(20),
                           ),
+                        ],
                       ],
                     ),
                   ),
@@ -223,6 +250,11 @@ class FullPlayerSheet extends GetView<FullPlayerSheetController> {
     return Obx(() {
       final isSelected = controller.sheetPageIndex.value == index;
       return TextButton.icon(
+        style: TextButton.styleFrom(
+          backgroundColor: isSelected ? activeColor.withValues(alpha: 0.15) : Colors.transparent,
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        ),
         onPressed: () => controller.pageController.animateToPage(
           index,
           duration: const Duration(milliseconds: 300),
@@ -230,14 +262,14 @@ class FullPlayerSheet extends GetView<FullPlayerSheetController> {
         ),
         icon: Icon(
           icon,
-          color: isSelected ? activeColor : color.withValues(alpha: 0.3),
+          color: isSelected ? activeColor : color.withValues(alpha: 0.5),
           size: 20,
         ),
         label: Text(
           label,
           style: TextStyle(
-            color: isSelected ? activeColor : color.withValues(alpha: 0.3),
-            fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+            color: isSelected ? activeColor : color.withValues(alpha: 0.5),
+            fontWeight: isSelected ? FontWeight.w800 : FontWeight.w600,
           ),
         ),
       );
@@ -252,10 +284,10 @@ class FullPlayerSheet extends GetView<FullPlayerSheetController> {
     Color subTextColor,
     Color activeColor,
   ) {
-    final artworkSize = screenWidth - 48;
+    final artworkSize = screenWidth - 64;
 
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16.0),
+      padding: const EdgeInsets.symmetric(horizontal: 32.0),
       child: Column(
         children: [
           const Spacer(flex: 2),
@@ -264,13 +296,13 @@ class FullPlayerSheet extends GetView<FullPlayerSheetController> {
             height: artworkSize,
             width: artworkSize,
             decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(20),
+              borderRadius: BorderRadius.circular(32),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.2),
-                  blurRadius: 25,
-                  offset: const Offset(0, 8),
-                  spreadRadius: -5,
+                  color: Colors.black.withValues(alpha: 0.3),
+                  blurRadius: 40,
+                  offset: const Offset(0, 20),
+                  spreadRadius: -10,
                 ),
               ],
             ),
@@ -293,28 +325,28 @@ class FullPlayerSheet extends GetView<FullPlayerSheetController> {
                 overflow: TextOverflow.ellipsis,
                 textAlign: TextAlign.center,
                 style: TextStyle(
-                  fontSize: 26,
-                  fontWeight: FontWeight.w800,
+                  fontSize: 28,
+                  fontWeight: FontWeight.w900,
                   color: mainTextColor,
                   letterSpacing: -0.5,
                 ),
               ),
-              const SizedBox(height: 6),
+              const SizedBox(height: 8),
               Text(
                 song.artist ?? "Unknown Artist",
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 textAlign: TextAlign.center,
                 style: TextStyle(
-                  fontSize: 16,
+                  fontSize: 18,
                   color: subTextColor,
-                  fontWeight: FontWeight.w500,
+                  fontWeight: FontWeight.w600,
                 ),
               ),
             ],
           ),
 
-          const SizedBox(height: 32),
+          const SizedBox(height: 36),
 
           // Seek Bar
           Obx(() {
@@ -339,13 +371,14 @@ class FullPlayerSheet extends GetView<FullPlayerSheetController> {
                     activeTrackColor: mainTextColor,
                     inactiveTrackColor: mainTextColor.withValues(alpha: 0.2),
                     thumbColor: mainTextColor,
-                    trackHeight: 6,
+                    trackHeight: 8,
                     trackShape: const RoundedRectSliderTrackShape(),
                     thumbShape: const RoundSliderThumbShape(
-                      enabledThumbRadius: 8,
+                      enabledThumbRadius: 10,
+                      elevation: 4,
                     ),
                     overlayShape: const RoundSliderOverlayShape(
-                      overlayRadius: 16,
+                      overlayRadius: 24,
                     ),
                   ),
                   child: Slider(
@@ -358,7 +391,7 @@ class FullPlayerSheet extends GetView<FullPlayerSheetController> {
                   ),
                 ),
                 Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 6),
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
@@ -368,8 +401,8 @@ class FullPlayerSheet extends GetView<FullPlayerSheetController> {
                         ),
                         style: TextStyle(
                           color: subTextColor,
-                          fontSize: 12,
-                          fontWeight: FontWeight.w600,
+                          fontSize: 13,
+                          fontWeight: FontWeight.w700,
                         ),
                       ),
                       Text(
@@ -378,8 +411,8 @@ class FullPlayerSheet extends GetView<FullPlayerSheetController> {
                         ),
                         style: TextStyle(
                           color: subTextColor,
-                          fontSize: 12,
-                          fontWeight: FontWeight.w600,
+                          fontSize: 13,
+                          fontWeight: FontWeight.w700,
                         ),
                       ),
                     ],
@@ -396,9 +429,9 @@ class FullPlayerSheet extends GetView<FullPlayerSheetController> {
             children: [
               IconButton(
                 onPressed: controller.audioController.toggleShuffle,
-                icon: Icon(Icons.shuffle_rounded),
+                icon: const Icon(Icons.shuffle_rounded),
                 color: controller.audioController.isShuffleModeEnabled.value
-                    ? activeColor.brighten(20)
+                    ? activeColor.brighten(30)
                     : subTextColor,
                 iconSize: 28,
               ),
@@ -407,17 +440,24 @@ class FullPlayerSheet extends GetView<FullPlayerSheetController> {
                 onPressed: controller.audioController.previous,
                 icon: const Icon(Icons.skip_previous_rounded),
                 color: mainTextColor,
-                iconSize: 42,
+                iconSize: 44,
               ),
 
               Container(
                 decoration: BoxDecoration(
                   color: mainTextColor,
                   shape: BoxShape.circle,
+                  boxShadow: [
+                    BoxShadow(
+                      color: mainTextColor.withValues(alpha: 0.2),
+                      blurRadius: 16,
+                      offset: const Offset(0, 8),
+                    )
+                  ],
                 ),
                 padding: const EdgeInsets.all(4),
                 child: IconButton(
-                  iconSize: 48,
+                  iconSize: 56,
                   onPressed: controller.audioController.togglePlay,
                   icon: Icon(
                     controller.audioController.isPlaying.value
@@ -434,7 +474,7 @@ class FullPlayerSheet extends GetView<FullPlayerSheetController> {
                 onPressed: controller.audioController.next,
                 icon: const Icon(Icons.skip_next_rounded),
                 color: mainTextColor,
-                iconSize: 42,
+                iconSize: 44,
               ),
 
               IconButton(
@@ -446,7 +486,7 @@ class FullPlayerSheet extends GetView<FullPlayerSheetController> {
                 ),
                 color: controller.audioController.loopMode.value == LoopMode.off
                     ? subTextColor
-                    : activeColor.brighten(20),
+                    : activeColor.brighten(30),
                 iconSize: 28,
               ),
             ],
@@ -485,49 +525,51 @@ class FullPlayerSheet extends GetView<FullPlayerSheetController> {
 
           return AnimatedContainer(
             duration: const Duration(milliseconds: 300),
-            margin: const EdgeInsets.only(bottom: 8),
+            margin: const EdgeInsets.only(bottom: 12),
             decoration: BoxDecoration(
               color: isPlaying
-                  ? activeColor.withValues(alpha: 0.2)
+                  ? activeColor.withValues(alpha: 0.15)
                   : Colors.transparent,
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(16),
               border: isPlaying
-                  ? Border.all(color: activeColor.withValues(alpha: 0.5))
+                  ? Border.all(color: activeColor.withValues(alpha: 0.3))
                   : null,
             ),
             child: ListTile(
               contentPadding: const EdgeInsets.symmetric(
-                horizontal: 12,
-                vertical: 4,
+                horizontal: 16,
+                vertical: 6,
               ),
               leading: QueryArtworkWidget(
                 id: s.id,
                 type: ArtworkType.AUDIO,
                 nullArtworkWidget: Container(
-                  width: 50,
-                  height: 50,
+                  width: 52,
+                  height: 52,
                   decoration: BoxDecoration(
-                    color: Colors.white10,
-                    borderRadius: BorderRadius.circular(8),
+                    color: textColor.withValues(alpha: 0.05),
+                    borderRadius: BorderRadius.circular(12),
                   ),
                   child: Icon(Icons.music_note_rounded, color: subTextColor),
                 ),
-                artworkBorder: BorderRadius.circular(8),
+                artworkBorder: BorderRadius.circular(12),
+                artworkWidth: 52,
+                artworkHeight: 52,
               ),
               title: Text(
                 s.title,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 style: TextStyle(
-                  color: isPlaying ? activeColor.brighten(20) : textColor,
-                  fontWeight: isPlaying ? FontWeight.w800 : FontWeight.w500,
+                  color: isPlaying ? activeColor.brighten(30) : textColor,
+                  fontWeight: isPlaying ? FontWeight.w800 : FontWeight.w600,
                   fontSize: 15,
                 ),
               ),
               subtitle: Text(
                 s.artist ?? "Unknown",
                 maxLines: 1,
-                style: TextStyle(color: subTextColor, fontSize: 13),
+                style: TextStyle(color: subTextColor, fontSize: 13, fontWeight: FontWeight.w500),
               ),
               onTap: () {
                 if (currentIndex != index) {
@@ -555,13 +597,19 @@ class FullPlayerSheet extends GetView<FullPlayerSheetController> {
       }
 
       if (controller.audioController.lyrics.isEmpty) {
-        return Center(child: Text("No Lyrics"));
+        return Center(
+          child: Text(
+            "No Lyrics found", 
+            style: TextStyle(color: mainTextColor.withValues(alpha: 0.5), fontSize: 18, fontWeight: FontWeight.bold)
+          )
+        );
       }
 
       return Stack(
         children: [
           ScrollablePositionedList.builder(
             itemCount: controller.audioController.lyrics.length,
+            physics: const BouncingScrollPhysics(),
             itemScrollController:
                 controller.audioController.lyricsScrollController,
             itemPositionsListener:
@@ -585,7 +633,9 @@ class FullPlayerSheet extends GetView<FullPlayerSheetController> {
                     color: isActive
                         ? activeColor
                         : mainTextColor.withValues(alpha: 0.4),
-                    fontSize: isActive ? 20 : 18,
+                    fontSize: isActive ? 24 : 18,
+                    fontWeight: isActive ? FontWeight.w900 : FontWeight.w600,
+                    letterSpacing: -0.5,
                   ),
                 ),
               );
@@ -593,16 +643,16 @@ class FullPlayerSheet extends GetView<FullPlayerSheetController> {
           ),
 
           Positioned(
-            bottom: 20,
-            right: 20,
+            bottom: 24,
+            right: 24,
             child: FloatingActionButton.extended(
-              elevation: 0,
+              elevation: 4,
               backgroundColor: activeColor,
               foregroundColor: activeColor.computeLuminance() > 0.5
                   ? Colors.black
                   : Colors.white,
-              icon: const Icon(Icons.ios_share),
-              label: const Text("Share Card"),
+              icon: const Icon(Icons.ios_share_rounded),
+              label: const Text("Share Card", style: TextStyle(fontWeight: FontWeight.bold)),
               onPressed: () {
                 final song = controller.audioController.currentSong.value;
                 if (song != null) {
@@ -628,42 +678,76 @@ class FullPlayerSheet extends GetView<FullPlayerSheetController> {
         return Center(child: CircularProgressIndicator(color: textColor));
       }
       return SingleChildScrollView(
-        padding: const EdgeInsets.symmetric(horizontal: 12),
+        physics: const BouncingScrollPhysics(),
+        padding: const EdgeInsets.symmetric(horizontal: 24),
         child: Column(
           children: [
             if (controller.audioController.artistImageUrl.value.isNotEmpty)
-              ClipRRect(
-                borderRadius: BorderRadius.circular(100),
-                child: Image.network(
-                  controller.audioController.artistImageUrl.value,
-                  width: 160,
-                  height: 160,
-                  fit: BoxFit.cover,
-                  errorBuilder: (c, o, s) =>
-                      Icon(Icons.person, size: 100, color: subTextColor),
+              Container(
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.2),
+                      blurRadius: 30,
+                      offset: const Offset(0, 10),
+                    )
+                  ]
+                ),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(100),
+                  child: Image.network(
+                    controller.audioController.artistImageUrl.value,
+                    width: 200,
+                    height: 200,
+                    fit: BoxFit.cover,
+                    errorBuilder: (c, o, s) =>
+                        Container(
+                          width: 200,
+                          height: 200,
+                          color: textColor.withValues(alpha: 0.05),
+                          child: Icon(Icons.person_rounded, size: 80, color: subTextColor),
+                        )
+                  ),
                 ),
               )
             else
-              Icon(Icons.person, size: 100, color: subTextColor),
+              Container(
+                width: 200,
+                height: 200,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: textColor.withValues(alpha: 0.05),
+                ),
+                child: Icon(Icons.person_rounded, size: 80, color: subTextColor),
+              ),
 
-            const SizedBox(height: 24),
+            const SizedBox(height: 32),
             Text(
               controller.audioController.currentSong.value?.artist ??
                   "About the Artist",
               style: TextStyle(
                 color: textColor,
-                fontSize: 22,
-                fontWeight: FontWeight.bold,
+                fontSize: 26,
+                fontWeight: FontWeight.w900,
+                letterSpacing: -0.5,
               ),
+              textAlign: TextAlign.center,
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 24),
             Text(
               controller.audioController.artistBio.value.isEmpty
                   ? "No information found."
                   : controller.audioController.artistBio.value,
-              style: TextStyle(color: subTextColor, fontSize: 16, height: 1.5),
+              style: TextStyle(
+                color: subTextColor, 
+                fontSize: 16, 
+                height: 1.6,
+                fontWeight: FontWeight.w500,
+              ),
               textAlign: TextAlign.center,
             ),
+            const SizedBox(height: 40),
           ],
         ),
       );

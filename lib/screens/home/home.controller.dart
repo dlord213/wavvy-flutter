@@ -9,8 +9,7 @@ class HomeController extends GetxController {
   final playlistController = Get.find<PlaylistsController>();
 
   Color getNavbarColor(BuildContext context) {
-    return audioController.playerColor.value ??
-        context.theme.colorScheme.surfaceContainerHighest;
+    return context.theme.scaffoldBackgroundColor;
   }
 
   Color getBgColor(BuildContext context) {

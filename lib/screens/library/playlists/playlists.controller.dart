@@ -17,6 +17,7 @@ class PlaylistsController extends GetxController {
         audioController.createLocalPlaylist(textController.text);
         Get.back();
       },
+      buttonColor: Get!.context!.theme.buttonTheme.colorScheme!.primary,
     );
   }
 
@@ -30,6 +31,7 @@ class PlaylistsController extends GetxController {
         await audioController.removeFromLocalPlaylist(playlistId, songId);
         Get.back();
       },
+      buttonColor: Get!.context!.theme.buttonTheme.colorScheme!.primary,
     );
   }
 

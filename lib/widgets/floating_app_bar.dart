@@ -21,19 +21,25 @@ class FloatingAppBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final textColor = context.isDarkMode ? Colors.white : Colors.black;
+    final textColor = context.theme.textTheme.bodyLarge?.color;
+    final bgColor = context.isDarkMode ? Colors.grey[900] : Colors.white;
 
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-      decoration: BoxDecoration(
-        color: Theme.of(context).scaffoldBackgroundColor,
-        border: Border(
-          bottom: BorderSide(width: 1, color: context.theme.dividerColor),
+    return SafeArea(
+      bottom: false,
+      child: Container(
+        margin: const EdgeInsets.fromLTRB(16, 8, 16, 8),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        decoration: BoxDecoration(
+          color: bgColor,
+          borderRadius: BorderRadius.circular(24),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.05),
+              blurRadius: 15,
+              offset: const Offset(0, 4),
+            ),
+          ],
         ),
-      ),
-      child: SafeArea(
-        bottom: false,
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           crossAxisAlignment: CrossAxisAlignment.center,
@@ -46,8 +52,8 @@ class FloatingAppBar extends StatelessWidget {
                 Text(
                   title,
                   style: TextStyle(
-                    fontSize: 26,
-                    fontWeight: FontWeight.bold,
+                    fontSize: 24,
+                    fontWeight: FontWeight.w800,
                     letterSpacing: -0.5,
                     color: textColor,
                   ),
@@ -65,8 +71,11 @@ class FloatingAppBar extends StatelessWidget {
                   const SizedBox(width: 4),
                   IconButton(
                     onPressed: onSearchTap ?? () => Get.toNamed("/search"),
-                    icon: Icon(Icons.search, size: 26, color: textColor),
+                    icon: Icon(Icons.search_rounded, size: 24, color: textColor),
                     tooltip: "Search",
+                    style: IconButton.styleFrom(
+                      backgroundColor: context.theme.scaffoldBackgroundColor,
+                    ),
                   ),
                 ],
 
@@ -84,10 +93,13 @@ class FloatingAppBar extends StatelessWidget {
                       context.isDarkMode
                           ? Icons.light_mode_rounded
                           : Icons.dark_mode_rounded,
-                      size: 26,
+                      size: 24,
                       color: textColor,
                     ),
                     tooltip: "Toggle Theme",
+                    style: IconButton.styleFrom(
+                      backgroundColor: context.theme.scaffoldBackgroundColor,
+                    ),
                   ),
                 ],
               ],

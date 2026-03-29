@@ -65,7 +65,7 @@ class TikTokController extends GetxController {
     try {
       var video = await TiktokScraper.getVideoInfo(
         url,
-        source: ScrapeVideoSource.TikDownloader,
+        source: ScrapeVideoSource.OfficialSite,
       );
 
       fetchedVideo.value = {
@@ -155,8 +155,9 @@ class TikTokController extends GetxController {
         taskTitles.remove(taskId);
         progressMap.remove(taskId);
         statusMap.remove(taskId);
-        Get.back();
+        Get.back(); 
       },
+      buttonColor: Get!.context!.theme!.colorScheme!.primary,
     );
   }
 }
